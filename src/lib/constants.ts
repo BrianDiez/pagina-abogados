@@ -59,6 +59,8 @@ export interface PlanDef {
   monthlyUsd: number | null; // null = a consultar
   annualUsd: number | null;
   tagline: string;
+  /** Ancla de valor: el precio traducido a la unidad mental del abogado */
+  anchor?: string;
   highlight?: boolean;
   features: string[];
   missing?: string[];
@@ -86,6 +88,7 @@ export const PLANS: PlanDef[] = [
     monthlyUsd: 9,
     annualUsd: 90,
     tagline: "Para profesionales que empiezan a digitalizarse.",
+    anchor: "Cuesta menos de media consulta",
     features: [
       "Servicios y turnos ilimitados",
       "0% comisión de plataforma",
@@ -103,6 +106,7 @@ export const PLANS: PlanDef[] = [
     monthlyUsd: 19,
     annualUsd: 180,
     tagline: "Para la mayoría de los profesionales activos.",
+    anchor: "Una consulta al mes lo paga",
     highlight: true,
     features: [
       "Todo lo de Esencial",
@@ -119,9 +123,10 @@ export const PLANS: PlanDef[] = [
   {
     id: "studio",
     name: "Estudio",
-    monthlyUsd: 39,
-    annualUsd: 360,
+    monthlyUsd: 49,
+    annualUsd: 490,
     tagline: "Para estudios jurídicos con equipo.",
+    anchor: "Menos de US$ 10 por profesional",
     features: [
       "Todo lo de Profesional",
       "Hasta 5 perfiles bajo un estudio",

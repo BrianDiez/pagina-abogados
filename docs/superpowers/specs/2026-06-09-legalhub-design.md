@@ -60,6 +60,6 @@ src/
 - La lógica de slots (generación, solapamiento, anticipación) vive en `lib/slots.ts` puro y testeable; la versión SQL es la autoridad en producción.
 - Verificación de la entrega: `tsc -b && vite build` verde + recorrido visual de las rutas principales.
 
-## 8. Modelo de negocio (sin cambios sobre la spec)
+## 8. Modelo de negocio
 
-Planes Gratuito $0 (5% comisión, 10 turnos/mes) · Esencial $9 · Profesional $19 (recomendado, videollamada) · Estudio $39 (5 perfiles) · Enterprise. Ingresos extra: destacados $15/mes, storage, IA por uso.
+Planes Gratuito $0 (5% comisión, 10 turnos/mes) · Esencial $9 · Profesional $19 (recomendado, videollamada) · Estudio $49 (5 perfiles) · Enterprise. Ingresos extra: destacados $15/mes, storage, IA por uso. Análisis completo, justificación de cada precio y unit economics: [docs/business-model.md](../../business-model.md).

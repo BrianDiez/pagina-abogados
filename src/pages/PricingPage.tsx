@@ -78,6 +78,9 @@ export function PricingPage() {
                   </span>
                   <span className="text-sm text-navy-400"> USD / {annual ? "año" : "mes"}</span>
                 </p>
+                {plan.anchor && (
+                  <p className="mt-1 text-xs font-medium text-gold-600">{plan.anchor}</p>
+                )}
                 <ButtonLink
                   to="/registro/profesional"
                   variant={plan.highlight ? "gold" : "outline"}
@@ -118,8 +121,10 @@ export function PricingPage() {
         </Card>
 
         <p className="mt-8 text-center text-xs text-navy-400">
-          Extras: Destacado en directorio US$ 15/mes · Storage adicional US$ 5 por 10 GB ·
-          Comisión del 5% por transacción solo en el plan Gratuito.
+          Los precios son en USD de referencia: el cobro se hace en tu moneda local vía
+          MercadoPago. Extras: Destacado en directorio US$ 15/mes · Storage adicional US$ 5 por
+          10 GB · Comisión del 5% por transacción solo en el plan Gratuito (en planes pagos,
+          0% — solo pagás la comisión propia de la pasarela).
         </p>
       </section>
 

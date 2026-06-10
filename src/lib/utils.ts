@@ -33,10 +33,13 @@ export function formatTime(date: Date | string): string {
   return format(new Date(date), "HH:mm");
 }
 
+const HONORIFICS = /^(dr|dra|esc|escr|lic|abg|abog|ing|cr|cra|sr|sra|srta|prof)\.?$/i;
+
 export function initials(name: string): string {
   return name
     .split(/\s+/)
-    .filter((w) => /^\p{L}|\p{N}/u.test(w)) // ignora "&", "y", símbolos sueltos
+    .filter((w) => /^[\p{L}\p{N}]/u.test(w)) // ignora "&", "y", símbolos sueltos
+    .filter((w) => !HONORIFICS.test(w)) // "Dra. Valentina Ríos" -> VR, no DV
     .slice(0, 2)
     .map((w) => w[0]!.toUpperCase())
     .join("");
