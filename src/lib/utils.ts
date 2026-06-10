@@ -16,6 +16,7 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 };
 
 export function formatMoney(amount: number, currency: string): string {
+  if (amount === 0) return "Gratis";
   const symbol = CURRENCY_SYMBOLS[currency] ?? currency;
   return `${symbol} ${amount.toLocaleString("es-UY", { maximumFractionDigits: 0 })}`;
 }

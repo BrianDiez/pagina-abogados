@@ -93,13 +93,14 @@ export async function createBooking(input: BookingInput): Promise<Appointment> {
   return delay({ ...appointment }, 400);
 }
 
-/** Simula el pago (en producción: redirección a MercadoPago + webhook). */
+/** Simula el pago (en producción: redirección a MercadoPago + webhook).
+ *  Las consultas gratuitas se confirman directo, sin pasarela. */
 export async function payAppointment(id: string): Promise<Appointment> {
   const db = getDB();
   const appointment = db.appointments.find((a) => a.id === id);
   if (!appointment) throw new Error("Turno no encontrado");
   appointment.status = "confirmed";
-  appointment.paymentStatus = "paid";
+  appointment.paymentStatus = appointment.price === 0 ? "waived" : "paid";
   if (appointment.modality === "video") {
     appointment.videoRoomUrl = `https://legalhub.daily.co/demo-${appointment.id}`;
   }

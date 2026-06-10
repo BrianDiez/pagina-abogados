@@ -198,6 +198,26 @@ export function RegisterLawyerPage() {
                     {...form.register("bio")}
                   />
                 </FieldLabel>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const type = form.getValues("professionalType");
+                      const city = form.getValues("city") || "[tu ciudad]";
+                      const template =
+                        type === "notary"
+                          ? `Soy escribano/a en ${city} y ayudo a [personas y empresas] con [compraventas, certificaciones, poderes y contratos]. Trabajo con agenda online para que resuelvas tu trámite sin perder mañanas enteras: traé tus documentos y lo dejamos pronto en una sola reunión.`
+                          : `Soy abogado/a en ${city} y ayudo a [trabajadores / familias / pymes] a resolver [despidos, divorcios, contratos: tu tema principal]. Te explico cada paso en lenguaje claro, sin tecnicismos, con honorarios transparentes desde la primera consulta. Atiendo por videollamada en todo el país.`;
+                      form.setValue("bio", template, { shouldValidate: true });
+                    }}
+                  >
+                    ✨ Usar plantilla
+                  </Button>
+                  <p className="text-xs text-navy-400">
+                    Tip: contá a quién ayudás y con qué — evitá el juridiqués. Reemplazá los [corchetes].
+                  </p>
+                </div>
                 <div className="rounded-xl border border-gold-200 bg-gold-50 p-4 text-sm text-navy-600">
                   <p className="flex items-center gap-1.5 font-semibold text-gold-700">
                     <BadgeCheck className="size-4" />

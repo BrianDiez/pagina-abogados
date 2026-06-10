@@ -15,6 +15,9 @@ import {
   ArrowRight,
   Wallet,
   Clock,
+  GraduationCap,
+  Lightbulb,
+  Sparkles,
 } from "lucide-react";
 import { listLawyers } from "@/api/lawyers";
 import { faqJsonLd, organizationJsonLd, usePageMeta } from "@/lib/seo";
@@ -265,6 +268,50 @@ export function LandingPage() {
                 <p className="text-sm font-medium text-navy-700">{label}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PARA RECIÉN MATRICULADOS */}
+      <section className="bg-navy-900 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <SectionTitle
+            center
+            light
+            eyebrow="Para los que arrancan"
+            title="¿Recién matriculado/a? Esta plataforma se hizo para vos"
+            subtitle="No necesitás cartera de clientes ni 20 años de trayectoria. Necesitás ser visible, cobrar bien desde el día uno y construir reputación."
+          />
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
+            {[
+              {
+                icon: GraduationCap,
+                title: "Empezá gratis, en serio",
+                text: "Plan gratuito para siempre: perfil público, agenda online y cobros. Sin tarjeta, sin permanencia. Tu primera oficina es tu perfil.",
+              },
+              {
+                icon: Lightbulb,
+                title: "¿No sabés cuánto cobrar?",
+                text: "Te sugerimos un rango de precios según tu especialidad, ciudad y experiencia. Y podés ofrecer una primera consulta gratuita para conseguir tus primeras reseñas.",
+              },
+              {
+                icon: Sparkles,
+                title: "Reputación desde el día uno",
+                text: "Cada consulta completada puede convertirse en una reseña verificada. En seis meses tenés lo que a la generación anterior le llevó una década: prueba social.",
+              },
+            ].map(({ icon: Icon, title, text }) => (
+              <div key={title} className="rounded-2xl border border-navy-700 bg-navy-800/60 p-6">
+                <Icon className="size-7 text-gold-400" />
+                <h3 className="mt-4 font-display text-xl font-semibold text-white">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-navy-200">{text}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10 text-center">
+            <ButtonLink to="/registro/profesional" variant="gold" size="lg">
+              Crear mi perfil gratis
+              <ArrowRight className="size-4" />
+            </ButtonLink>
           </div>
         </div>
       </section>

@@ -279,7 +279,9 @@ export function ProfilePage() {
         {/* Sidebar */}
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <Card className="p-5">
-            <p className="text-sm text-navy-400">Consultas desde</p>
+            <p className="text-sm text-navy-400">
+              {lawyer.minPrice?.amount === 0 ? "Primera consulta" : "Consultas desde"}
+            </p>
             {lawyer.minPrice && (
               <p className="font-mono text-2xl font-bold text-navy-800">
                 {formatMoney(lawyer.minPrice.amount, lawyer.minPrice.currency)}
@@ -333,6 +335,24 @@ export function ProfilePage() {
           </Card>
         </aside>
       </div>
+
+      {/* CTA fija en móvil: el botón de agendar siempre a un toque */}
+      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t border-navy-100 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+        <div>
+          <p className="text-[11px] text-navy-400">
+            {lawyer.minPrice?.amount === 0 ? "Primera consulta" : "Desde"}
+          </p>
+          {lawyer.minPrice && (
+            <p className="font-mono text-lg font-bold leading-tight text-navy-800">
+              {formatMoney(lawyer.minPrice.amount, lawyer.minPrice.currency)}
+            </p>
+          )}
+        </div>
+        <ButtonLink to={`/p/${lawyer.slug}/agendar`} variant="gold" size="lg" className="flex-1 max-w-60">
+          Agendar consulta
+        </ButtonLink>
+      </div>
+      <div className="h-20 lg:hidden" />
 
       <Footer />
     </div>

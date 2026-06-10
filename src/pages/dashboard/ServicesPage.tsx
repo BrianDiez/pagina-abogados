@@ -6,8 +6,11 @@ import { z } from "zod";
 import { Briefcase, Clock, Pencil, Plus, Trash2 } from "lucide-react";
 import { useAuth } from "@/api/auth";
 import { createService, deleteService, getServices, updateService } from "@/api/lawyers";
+import { useLawyer } from "./useLawyer";
 import { MODALITY_LABELS } from "@/lib/constants";
+import { suggestedPriceRange } from "@/lib/pricing";
 import { formatMoney } from "@/lib/utils";
+import type { Lawyer } from "@/types";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -30,10 +33,12 @@ type Form = z.infer<typeof schema>;
 
 function ServiceModal({
   lawyerId,
+  lawyer,
   service,
   onClose,
 }: {
   lawyerId: string;
+  lawyer: Lawyer | null | undefined;
   service: Service | null;
   onClose: () => void;
 }) {
@@ -59,6 +64,12 @@ function ServiceModal({
           breakAfterMinutes: 15,
         },
   });
+
+  // Sugerencia de precio para quien no sabe cuánto cobrar (clave para juniors)
+  const watchedDuration = form.watch("durationMinutes") || 45;
+  const suggestion = lawyer
+    ? suggestedPriceRange(lawyer.country, lawyer.yearsExperience, Number(watchedDuration))
+    : null;
 
   const mutation = useMutation({
     mutationFn: (data: Form) =>
@@ -109,6 +120,18 @@ function ServiceModal({
             </Select>
           </FieldLabel>
         </div>
+        {suggestion && (
+          <p className="rounded-xl bg-gold-50 border border-gold-200 px-3.5 py-2.5 text-xs leading-relaxed text-navy-600">
+            💡 <strong>Precio sugerido para tu perfil</strong> ({lawyer!.yearsExperience}{" "}
+            {lawyer!.yearsExperience === 1 ? "año" : "años"} de experiencia, {watchedDuration} min):{" "}
+            <span className="font-mono font-bold">
+              {formatMoney(suggestion.min, suggestion.currency)} –{" "}
+              {formatMoney(suggestion.max, suggestion.currency)}
+            </span>
+            . También podés poner <strong>0</strong> para ofrecer una primera consulta gratuita:
+            es la forma más rápida de conseguir tus primeras reseñas.
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-3">
           <FieldLabel label="Anticipación mínima (horas)" hint="Cuánto antes pueden reservar">
             <Input type="number" {...form.register("minAdvanceHours")} />
@@ -127,6 +150,7 @@ function ServiceModal({
 
 export function ServicesPage() {
   const { user } = useAuth();
+  const { data: lawyer } = useLawyer();
   const queryClient = useQueryClient();
   const lawyerId = user!.lawyerId!;
   const [editing, setEditing] = useState<Service | null>(null);
@@ -218,6 +242,7 @@ export function ServicesPage() {
       {(creating || editing) && (
         <ServiceModal
           lawyerId={lawyerId}
+          lawyer={lawyer}
           service={editing}
           onClose={() => {
             setCreating(false);

@@ -366,6 +366,7 @@ export const seedServices: Service[] = [
   svc("s10-1", "l10", "Consulta para startups (45 min)", "SAS, vesting de fundadores, contratos tech o tokens: respuestas concretas.", 45, 90, "USD", "video"),
   svc("s10-2", "l10", "Revisión de contrato tecnológico", "SaaS, desarrollo, NDA o términos y condiciones, con observaciones por escrito.", 60, 150, "USD", "async"),
   svc("s11-1", "l11", "Consulta de marcas (40 min)", "Búsqueda de antecedentes y estrategia de registro para tu marca.", 40, 2800, "UYU", "video"),
+  svc("s12-0", "l12", "Primera consulta de orientación (20 min)", "Sin costo: me contás tu situación y te digo con honestidad si tenés caso y cómo seguiría.", 20, 0, "UYU", "video"),
   svc("s12-1", "l12", "Consulta inicial (45 min)", "Penal o civil: revisamos tu situación y armamos el plan.", 45, 1100, "UYU", "video"),
 ];
 

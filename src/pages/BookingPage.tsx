@@ -182,7 +182,7 @@ export function BookingPage() {
                 </span>
               </p>
               <p className="flex justify-between">
-                <span className="text-navy-400">Pagado</span>
+                <span className="text-navy-400">{confirmed.price === 0 ? "Costo" : "Pagado"}</span>
                 <span className="font-mono font-bold text-success">
                   {formatMoney(confirmed.price, confirmed.currency)}
                 </span>
@@ -355,35 +355,39 @@ export function BookingPage() {
             </form>
           )}
 
-          {/* Paso 4: Pago */}
+          {/* Paso 4: Pago (o confirmación directa si la consulta es gratuita) */}
           {step === 3 && service && slot && clientData && (
             <div className="grid gap-6 md:grid-cols-[1fr_280px]">
               <Card className="p-6">
                 <h3 className="flex items-center gap-2 font-display text-xl font-semibold text-navy-800">
                   <CreditCard className="size-5 text-gold-500" />
-                  Pago seguro
+                  {service.price === 0 ? "Confirmar reserva" : "Pago seguro"}
                 </h3>
                 <p className="mt-1 text-sm text-navy-400">
-                  Elegí el método. El pago confirma tu turno al instante.
+                  {service.price === 0
+                    ? "Esta consulta no tiene costo. Solo falta confirmar el turno."
+                    : "Elegí el método. El pago confirma tu turno al instante."}
                 </p>
-                <div className="mt-5 space-y-2.5">
-                  {["MercadoPago — tarjeta, QR o transferencia", "PayPal — tarjetas internacionales"].map(
-                    (m, i) => (
-                      <label
-                        key={m}
-                        className="flex cursor-pointer items-center gap-3 rounded-xl border border-navy-200 p-4 text-sm font-medium text-navy-700 transition-colors hover:border-gold-400 has-checked:border-gold-500 has-checked:bg-gold-50"
-                      >
-                        <input
-                          type="radio"
-                          name="payment-method"
-                          defaultChecked={i === 0}
-                          className="accent-gold-500"
-                        />
-                        {m}
-                      </label>
-                    ),
-                  )}
-                </div>
+                {service.price > 0 && (
+                  <div className="mt-5 space-y-2.5">
+                    {["MercadoPago — tarjeta, QR o transferencia", "PayPal — tarjetas internacionales"].map(
+                      (m, i) => (
+                        <label
+                          key={m}
+                          className="flex cursor-pointer items-center gap-3 rounded-xl border border-navy-200 p-4 text-sm font-medium text-navy-700 transition-colors hover:border-gold-400 has-checked:border-gold-500 has-checked:bg-gold-50"
+                        >
+                          <input
+                            type="radio"
+                            name="payment-method"
+                            defaultChecked={i === 0}
+                            className="accent-gold-500"
+                          />
+                          {m}
+                        </label>
+                      ),
+                    )}
+                  </div>
+                )}
                 <p className="mt-4 rounded-lg bg-navy-50 p-3 text-xs leading-relaxed text-navy-500">
                   Política de cancelación: gratis hasta {lawyer.cancellationPolicyHours} h antes del
                   turno.
@@ -405,12 +409,16 @@ export function BookingPage() {
                 >
                   <Lock className="size-4" />
                   {payMutation.isPending
-                    ? "Procesando pago…"
-                    : `Pagar ${formatMoney(service.price, service.currency)}`}
+                    ? "Procesando…"
+                    : service.price === 0
+                      ? "Confirmar reserva gratuita"
+                      : `Pagar ${formatMoney(service.price, service.currency)}`}
                 </Button>
-                <p className="mt-2 text-center text-[11px] text-navy-300">
-                  Demo: el pago es simulado, no se realiza ningún cargo.
-                </p>
+                {service.price > 0 && (
+                  <p className="mt-2 text-center text-[11px] text-navy-300">
+                    Demo: el pago es simulado, no se realiza ningún cargo.
+                  </p>
+                )}
               </Card>
 
               <Card className="h-fit space-y-3 p-5 text-sm">

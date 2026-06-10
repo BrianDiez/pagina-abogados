@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { isSameDay, isSameMonth } from "date-fns";
 import {
   CalendarDays,
@@ -9,9 +10,14 @@ import {
   ArrowRight,
   Share2,
   AlertTriangle,
+  CheckCircle2,
+  Circle,
+  Rocket,
 } from "lucide-react";
 import { useLawyer, useMyAppointments } from "./useLawyer";
-import { formatMoney, formatTime } from "@/lib/utils";
+import { getAvailability, getServices } from "@/api/lawyers";
+import { useAuth } from "@/api/auth";
+import { cn, formatMoney, formatTime } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -20,8 +26,30 @@ import { EmptyState, StatCard } from "@/components/ui/misc";
 export function DashboardHome() {
   const { data: lawyer } = useLawyer();
   const { data: appointments } = useMyAppointments();
+  const { user } = useAuth();
+  const { data: myServices } = useQuery({
+    queryKey: ["my-services", user?.lawyerId],
+    queryFn: () => getServices(user!.lawyerId!),
+    enabled: !!user?.lawyerId,
+  });
+  const { data: myAvailability } = useQuery({
+    queryKey: ["my-availability", user?.lawyerId],
+    queryFn: () => getAvailability(user!.lawyerId!),
+    enabled: !!user?.lawyerId,
+  });
 
   if (!lawyer) return <div className="h-96 animate-pulse rounded-2xl bg-navy-100/50" />;
+
+  // Checklist de arranque: guía a los recién matriculados a dejar el perfil operativo
+  const checklist = [
+    { label: "Subí tu foto profesional", done: !!lawyer.photoUrl, to: "/dashboard/configuracion" },
+    { label: "Completá tu bio (mín. 60 caracteres)", done: lawyer.bio.length >= 60, to: "/dashboard/configuracion" },
+    { label: "Creá tu primer servicio", done: (myServices ?? []).length > 0, to: "/dashboard/servicios" },
+    { label: "Configurá tus horarios de atención", done: (myAvailability ?? []).length > 0, to: "/dashboard/disponibilidad" },
+    { label: "Verificá tu matrícula", done: lawyer.isVerified, to: "/dashboard/configuracion" },
+  ];
+  const doneCount = checklist.filter((c) => c.done).length;
+  const showChecklist = doneCount < checklist.length;
 
   const now = new Date();
   const today = (appointments ?? []).filter(
@@ -66,7 +94,52 @@ export function DashboardHome() {
         </div>
       </div>
 
-      {!lawyer.isVerified && (
+      {showChecklist && (
+        <Card className="p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="flex items-center gap-2 font-display text-xl font-semibold text-navy-800">
+              <Rocket className="size-5 text-gold-500" />
+              Dejá tu consultorio listo
+            </h2>
+            <span className="font-mono text-sm font-bold text-navy-600">
+              {doneCount}/{checklist.length}
+            </span>
+          </div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-navy-100">
+            <div
+              className="h-full rounded-full bg-gold-400 transition-all"
+              style={{ width: `${(doneCount / checklist.length) * 100}%` }}
+            />
+          </div>
+          <ul className="mt-4 space-y-1">
+            {checklist.map((item) => (
+              <li key={item.label}>
+                <Link
+                  to={item.to}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-colors",
+                    item.done
+                      ? "text-navy-300 line-through"
+                      : "text-navy-700 hover:bg-navy-50 font-medium",
+                  )}
+                >
+                  {item.done ? (
+                    <CheckCircle2 className="size-4.5 shrink-0 text-success" />
+                  ) : (
+                    <Circle className="size-4.5 shrink-0 text-navy-300" />
+                  )}
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-navy-400">
+            Los perfiles completos y verificados reciben hasta 4× más consultas.
+          </p>
+        </Card>
+      )}
+
+      {!lawyer.isVerified && !showChecklist && (
         <Card className="flex items-start gap-3 border-gold-300 bg-gold-50 p-4">
           <AlertTriangle className="mt-0.5 size-5 shrink-0 text-gold-600" />
           <div className="flex-1 text-sm">

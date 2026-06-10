@@ -82,10 +82,16 @@ export function LawyerCard({ lawyer }: { lawyer: LawyerWithPrice }) {
         <div className="text-right">
           {lawyer.minPrice && (
             <p className="mb-2 text-xs text-navy-400">
-              Desde{" "}
-              <span className="font-mono text-sm font-bold text-navy-800">
-                {formatMoney(lawyer.minPrice.amount, lawyer.minPrice.currency)}
-              </span>
+              {lawyer.minPrice.amount === 0 ? (
+                <span className="font-semibold text-success">Primera consulta gratis</span>
+              ) : (
+                <>
+                  Desde{" "}
+                  <span className="font-mono text-sm font-bold text-navy-800">
+                    {formatMoney(lawyer.minPrice.amount, lawyer.minPrice.currency)}
+                  </span>
+                </>
+              )}
             </p>
           )}
           <ButtonLink to={`/p/${lawyer.slug}`} size="sm" variant="primary">
