@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  /* Marca LegalHub — "Legal Premium" */
+  --color-navy-50: #f0f3f9;
+  --color-navy-100: #dce3f0;
+  --color-navy-200: #b9c7e0;
+  --color-navy-300: #8fa3c7;
+  --color-navy-400: #5f7aa8;
+  --color-navy-500: #3d5685;
+  --color-navy-600: #2a3f66;
+  --color-navy-700: #1a2b4b;
+  --color-navy-800: #14213a;
+  --color-navy-900: #0f1929;
+  --color-navy-950: #0a111c;
+
+  --color-gold-50: #fbf8f2;
+  --color-gold-100: #f5eddd;
+  --color-gold-200: #e9d9b8;
+  --color-gold-300: #dcc494;
+  --color-gold-400: #c9a96e;
+  --color-gold-500: #b8924c;
+  --color-gold-600: #9a7739;
+  --color-gold-700: #7c5e2e;
+
+  --color-cream: #f8f7f4;
+  --color-ink: #1c1c1e;
+  --color-success: #2d7a4f;
+  --color-success-light: #e8f3ed;
+  --color-danger: #c0392b;
+  --color-danger-light: #faeae8;
+  --color-warn: #b7791f;
+  --color-warn-light: #fdf3e0;
+
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-sans: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --shadow-card: 0 1px 3px rgb(26 43 75 / 0.06), 0 4px 16px rgb(26 43 75 / 0.07);
+  --shadow-card-hover: 0 2px 6px rgb(26 43 75 / 0.08), 0 12px 32px rgb(26 43 75 / 0.12);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-cream text-ink font-sans antialiased;
+  }
+  ::selection {
+    background-color: var(--color-gold-200);
+  }
+}
+
+@layer utilities {
+  /* Punto verde animado de "Disponible hoy" */
+  .pulse-dot {
+    position: relative;
+  }
+  .pulse-dot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background-color: var(--color-success);
+    animation: pulse-ring 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 0.6; }
+    80%, 100% { transform: scale(2.4); opacity: 0; }
+  }
+}
