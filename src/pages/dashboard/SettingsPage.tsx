@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BadgeCheck, Link2, QrCode, Save, ShieldAlert } from "lucide-react";
+import { BadgeCheck, CreditCard, Link2, QrCode, Save, ShieldAlert } from "lucide-react";
 import { useLawyer } from "./useLawyer";
 import { updateLawyerProfile } from "@/api/lawyers";
 import { PLAN_NAMES } from "@/lib/constants";
@@ -80,6 +80,32 @@ export function SettingsPage() {
         <ButtonLink to="/precios" variant="outline">
           Cambiar de plan
         </ButtonLink>
+      </Card>
+
+      {/* Cobros */}
+      <Card className="space-y-3 p-5">
+        <p className="flex items-center gap-2 font-semibold text-navy-800">
+          <CreditCard className="size-4 text-gold-500" />
+          Cobros
+        </p>
+        <p className="text-sm leading-relaxed text-navy-500">
+          Conectá tu cuenta de MercadoPago para recibir los pagos de tus consultas{" "}
+          <strong>directo en tu cuenta</strong>. LegalHub nunca retiene tu dinero
+          {lawyer.plan === "free" ? (
+            <>
+              : en el plan Gratuito se separa automáticamente un 5% de comisión en cada cobro
+              (en planes pagos es 0%).
+            </>
+          ) : (
+            <>. En tu plan la comisión de LegalHub es 0% — solo pagás la tarifa de MercadoPago.</>
+          )}
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" disabled title="Disponible al conectar el backend (Fase 2)">
+            Conectar MercadoPago
+          </Button>
+          <Badge tone="warn">No conectado</Badge>
+        </div>
       </Card>
 
       {/* Compartir */}

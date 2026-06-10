@@ -55,6 +55,26 @@
 
 ---
 
+## 2.b Infraestructura de cobro (cómo se cobra cada cosa, en la práctica)
+
+### El 5% del plan free: Split de Pagos, nunca facturación
+
+[Split de Pagos de MercadoPago](https://www.mercadopago.com.uy/developers/es/docs/checkout-api/how-tos/integrate-marketplace) (disponible UY/AR, Checkout Pro/API/Bricks):
+
+1. El profesional hace **"Conectar MercadoPago"** en su panel (OAuth `authorization_code`). Guardamos sus tokens en `mp_credentials` (solo service_role, jamás viajan al navegador).
+2. Cada reserva crea la preferencia de pago **con el access_token del profesional** + `marketplace_fee` = 5% si su plan es `free` (0 en planes pagos). Ver `supabase/functions/create-payment-preference`.
+3. MercadoPago descuenta primero su tarifa, luego transfiere nuestro fee a la cuenta de LegalHub, **automáticamente en el momento del pago**. El profesional recibe el neto en SU cuenta — nunca custodiamos su dinero (cero carga regulatoria), nunca le facturamos ni perseguimos deudas.
+
+**Regla de producto derivada:** el plan free solo cobra vía MercadoPago. La transferencia bancaria manual (que no permite split) queda para planes pagos — un incentivo de upgrade más.
+
+### Las suscripciones: moneda local + frecuencia flexible
+
+- Se cobran via [MP Suscripciones](https://www.mercadopago.com.ar/herramientas-para-vender/suscripciones) **en moneda local** (UYU/ARS), nunca en USD: $9 ≈ $U 360 / AR$ 13.000+, muy por encima de los mínimos por transacción locales (la doc muestra ejemplos desde ARS 10).
+- **Contingencia mínimos:** si en algún país el mínimo superara la cuota mensual del Esencial, MP soporta frecuencia semanal a anual → Esencial pasa a facturación **trimestral** (US$ 27/trimestre) manteniendo el precio mensual comunicado. Profesional ($19) y Estudio ($49) están siempre por encima de cualquier mínimo.
+- El precio en USD es solo referencia de lista; el monto local se ajusta periódicamente (no por cada fluctuación — estabilidad percibida > precisión cambiaria).
+
+---
+
 ## 3. Extras (fase 2, cuando haya tráfico)
 
 | Extra | Precio | Racional |
