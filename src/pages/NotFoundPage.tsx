@@ -1,8 +1,10 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ButtonLink } from "@/components/ui/Button";
+import { usePageMeta } from "@/lib/seo";
 
 export function NotFoundPage() {
+  usePageMeta({ title: "Página no encontrada", noindex: true });
   return (
     <div className="min-h-screen">
       <Header />

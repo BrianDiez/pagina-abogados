@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { getLawyerBySlug, getServices } from "@/api/lawyers";
 import { listReviews } from "@/api/reviews";
+import { attorneyJsonLd, usePageMeta } from "@/lib/seo";
 import { specialtyLabel, MODALITY_LABELS } from "@/lib/constants";
 import { professionalTypeLabel } from "@/i18n";
 import { formatMoney, formatDateShort } from "@/lib/utils";
@@ -80,6 +81,30 @@ export function ProfilePage() {
     queryKey: ["reviews", lawyer?.id],
     queryFn: () => listReviews(lawyer!.id),
     enabled: !!lawyer,
+  });
+
+  usePageMeta({
+    title: lawyer
+      ? `${lawyer.title} ${lawyer.displayName} — ${professionalTypeLabel(lawyer.professionalType, lawyer.country)} en ${lawyer.city}`
+      : "Perfil profesional",
+    description: lawyer
+      ? `${professionalTypeLabel(lawyer.professionalType, lawyer.country)} en ${lawyer.city} especializado en ${lawyer.specialties.map(specialtyLabel).slice(0, 3).join(", ")}. ${lawyer.yearsExperience} años de experiencia. Agendá online con pago seguro.`
+      : undefined,
+    path: `/p/${slug}`,
+    jsonLd: lawyer
+      ? attorneyJsonLd({
+          name: lawyer.displayName,
+          title: lawyer.title,
+          city: lawyer.city,
+          country: lawyer.country,
+          slug: lawyer.slug,
+          photoUrl: lawyer.photoUrl,
+          specialties: lawyer.specialties.map(specialtyLabel),
+          rating: lawyer.stats.avgRating,
+          reviewCount: lawyer.stats.reviewCount,
+          isNotary: lawyer.professionalType === "notary",
+        })
+      : undefined,
   });
 
   if (isLoading) {

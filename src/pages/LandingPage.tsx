@@ -17,6 +17,7 @@ import {
   Clock,
 } from "lucide-react";
 import { listLawyers } from "@/api/lawyers";
+import { faqJsonLd, organizationJsonLd, usePageMeta } from "@/lib/seo";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { LawyerCard } from "@/components/LawyerCard";
@@ -110,6 +111,14 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 }
 
 export function LandingPage() {
+  usePageMeta({
+    title: "LegalHub — Tu consultoría legal, online y profesional",
+    description:
+      "La plataforma para abogados y escribanos en Uruguay y Argentina: agenda online, cobro de consultas, videollamada integrada y reseñas verificadas. Creá tu perfil gratis.",
+    path: "/",
+    jsonLd: [organizationJsonLd, faqJsonLd(faqs)],
+  });
+
   const { data: featured } = useQuery({
     queryKey: ["lawyers", "featured"],
     queryFn: () => listLawyers({ sort: "rating" }),

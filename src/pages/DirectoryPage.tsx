@@ -3,7 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, UsersRound } from "lucide-react";
 import { listLawyers } from "@/api/lawyers";
-import { CITIES, MODALITY_LABELS, SPECIALTIES } from "@/lib/constants";
+import { usePageMeta } from "@/lib/seo";
+import { CITIES, MODALITY_LABELS, SPECIALTIES, specialtyLabel } from "@/lib/constants";
 import type { DirectoryFilters, Modality } from "@/types";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -29,6 +30,19 @@ export function DirectoryPage({ notariesOnly = false }: { notariesOnly?: boolean
   const { data: lawyers, isLoading } = useQuery({
     queryKey: ["lawyers", filters],
     queryFn: () => listLawyers(filters),
+  });
+
+  const seoSegment = notariesOnly ? "Escribanos y notarios" : "Abogados";
+  const seoQualifier = [
+    filters.specialty ? `de ${specialtyLabel(filters.specialty)}` : "",
+    filters.city ? `en ${filters.city}` : "en Uruguay y Argentina",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  usePageMeta({
+    title: `${seoSegment} ${seoQualifier} — Agenda online y consultas`,
+    description: `Encontrá ${seoSegment.toLowerCase()} ${seoQualifier}: perfiles con matrícula verificada, reseñas de clientes reales y agenda online con pago seguro.`,
+    path: notariesOnly ? "/escribanos" : "/abogados",
   });
 
   function setParam(key: string, value: string) {

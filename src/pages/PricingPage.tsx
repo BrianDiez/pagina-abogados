@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check, X } from "lucide-react";
 import { PLANS } from "@/lib/constants";
+import { usePageMeta } from "@/lib/seo";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Card } from "@/components/ui/Card";
@@ -9,6 +10,12 @@ import { SectionTitle } from "@/components/ui/misc";
 import { cn } from "@/lib/utils";
 
 export function PricingPage() {
+  usePageMeta({
+    title: "Planes y precios para profesionales",
+    description:
+      "Plan gratuito para siempre, Esencial US$ 9, Profesional US$ 19 con videollamada integrada y Estudio US$ 39. 14 días de prueba sin tarjeta, 0% de comisión en planes pagos.",
+    path: "/precios",
+  });
   const [annual, setAnnual] = useState(false);
 
   return (

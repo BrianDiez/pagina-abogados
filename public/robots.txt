@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /mi-cuenta
+Disallow: /login
+Disallow: /registro
+
+Sitemap: https://legalhub.app/sitemap.xml

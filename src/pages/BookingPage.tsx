@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { getLawyerBySlug, getServices } from "@/api/lawyers";
 import { createBooking, payAppointment } from "@/api/appointments";
+import { usePageMeta } from "@/lib/seo";
 import { MODALITY_LABELS } from "@/lib/constants";
 import { cn, formatDateLong, formatMoney, formatTime } from "@/lib/utils";
 import { Header } from "@/components/layout/Header";
@@ -86,6 +87,9 @@ export function BookingPage() {
     queryKey: ["lawyer", slug],
     queryFn: () => getLawyerBySlug(slug),
   });
+
+  usePageMeta({ title: "Agendar consulta", noindex: true });
+
   const { data: services } = useQuery({
     queryKey: ["services", lawyer?.id],
     queryFn: () => getServices(lawyer!.id),
