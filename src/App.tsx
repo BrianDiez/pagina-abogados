@@ -1,6 +1,13 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "@/api/auth";
+import { BACKEND } from "@/lib/backend";
+
+// Clerk solo se descarga cuando el backend es neon (en demo no pesa ni un byte)
+const ClerkRoot = lazy(() =>
+  import("@/api/clerkAuth").then((m) => ({ default: m.ClerkRoot })),
+);
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { LandingPage } from "@/pages/LandingPage";
@@ -32,9 +39,19 @@ const queryClient = new QueryClient({
   },
 });
 
+function MaybeClerk({ children }: { children: React.ReactNode }) {
+  if (BACKEND !== "neon") return <>{children}</>;
+  return (
+    <Suspense fallback={null}>
+      <ClerkRoot>{children}</ClerkRoot>
+    </Suspense>
+  );
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <MaybeClerk>
       <AuthProvider>
         <BrowserRouter>
           <ScrollToTop />
@@ -67,6 +84,7 @@ export default function App() {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
+      </MaybeClerk>
     </QueryClientProvider>
   );
 }

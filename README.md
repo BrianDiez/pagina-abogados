@@ -21,24 +21,24 @@ de ejemplo locales (12 profesionales, reseñas, agenda con turnos), sin backend.
 - Profesional: `abogado@legalhub.app` → panel completo con agenda, servicios, estadísticas
 - Cliente: `cliente@legalhub.app` → historial de consultas y reseñas
 
-## 🗄️ Conectar el backend real (Supabase)
+## 🗄️ Conectar el backend real (Neon + Clerk + R2 — todo free tier)
 
-El esquema completo está listo en `supabase/migrations/` (3 archivos: schema, RLS, funciones).
+**Guía paso a paso: [SETUP-NEON.md](SETUP-NEON.md)** (~15 min, sin tarjeta).
 
-1. Crear un proyecto en [supabase.com](https://supabase.com) — el plan gratuito permite 2
-   proyectos activos; si llegaste al límite, pausá uno o subí de plan.
-2. Aplicar las migraciones (en orden) desde el SQL Editor o con `supabase db push`.
-3. Copiar `.env.example` a `.env` y completar `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`
-   (Settings → API), y poner `VITE_DEMO_MODE=false`.
-4. Edge functions en `supabase/functions/`: `create-video-room` (Daily.co),
-   `mercadopago-webhook` (pagos) y `send-reminders` (recordatorios por email con Resend).
-   Deploy: `supabase functions deploy <nombre>`. Requieren secrets: `DAILY_API_KEY`,
-   `MP_ACCESS_TOKEN`, `RESEND_API_KEY`.
+- `neon/migrations/0001_init.sql` — esquema Postgres completo (anti doble-reserva,
+  slots en SQL, estudios, unidades judiciales)
+- `api/` — serverless functions de Vercel (directorio, perfil, slots, reservas,
+  sesión Clerk, presigned uploads a R2)
+- `VITE_BACKEND=neon` + las env vars de `.env.example` activan el modo real
+
+> La carpeta `supabase/` queda como implementación alternativa de referencia
+> (RLS completo + edge functions de MercadoPago/Daily.co listas para portar).
 
 ## 🧱 Stack
 
 React 19 · Vite · TypeScript · Tailwind v4 · React Router 7 · TanStack Query ·
-react-hook-form + zod · framer-motion · Supabase (Postgres + Auth + Storage + Edge Functions)
+react-hook-form + zod · framer-motion · **Neon** (Postgres serverless) · **Clerk** (auth) ·
+**Cloudflare R2** (storage) · Vercel Functions (API)
 
 ## 📐 Decisiones de diseño clave
 

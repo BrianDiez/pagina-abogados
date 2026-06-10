@@ -1,9 +1,30 @@
 import { addDays } from "date-fns";
-import { DEMO_MODE } from "@/lib/demo";
-import { getSupabase } from "@/lib/supabase";
+import { DEMO_MODE } from "@/lib/backend";
+import { apiFetch } from "@/lib/http";
 import { generateSlots } from "@/lib/slots";
 import { delay, getDB, persist, uid } from "@/data/demo/store";
 import type { Appointment, AppointmentStatus, Slot } from "@/types";
+
+function mapAppointmentRow(row: Record<string, unknown>): Appointment {
+  return {
+    id: String(row.id),
+    lawyerId: String(row.lawyer_id),
+    clientId: String(row.client_id),
+    serviceId: String(row.service_id),
+    status: row.status as AppointmentStatus,
+    startsAt: String(row.starts_at),
+    endsAt: String(row.ends_at),
+    modality: row.modality as Appointment["modality"],
+    clientNotes: (row.client_notes as string) ?? undefined,
+    videoRoomUrl: (row.video_room_url as string) ?? undefined,
+    price: Number(row.price),
+    currency: String(row.currency),
+    paymentStatus: row.payment_status as Appointment["paymentStatus"],
+    clientName: (row.client_name as string) ?? undefined,
+    clientEmail: (row.client_email as string) ?? undefined,
+    serviceName: (row.service_name as string) ?? undefined,
+  };
+}
 
 export async function getAvailableSlots(
   lawyerId: string,
@@ -12,17 +33,13 @@ export async function getAvailableSlots(
   days: number,
 ): Promise<Slot[]> {
   if (!DEMO_MODE) {
-    const { data, error } = await getSupabase().rpc("get_available_slots", {
-      p_lawyer_id: lawyerId,
-      p_service_id: serviceId,
-      p_from: from.toISOString().slice(0, 10),
-      p_to: addDays(from, days).toISOString().slice(0, 10),
+    const params = new URLSearchParams({
+      lawyerId,
+      serviceId,
+      from: from.toISOString().slice(0, 10),
+      days: String(days),
     });
-    if (error) throw error;
-    return (data as { slot_start: string; slot_end: string }[]).map((r) => ({
-      start: r.slot_start,
-      end: r.slot_end,
-    }));
+    return apiFetch<Slot[]>(`/api/slots?${params}`);
   }
 
   const db = getDB();
@@ -49,13 +66,26 @@ export interface BookingInput {
   notes?: string;
 }
 
-/** Crea el turno en pending_payment y devuelve el appointment. El pago lo confirma. */
+/** Crea el turno en pending_payment (o confirmado directo si es gratuito). */
 export async function createBooking(input: BookingInput): Promise<Appointment> {
+  if (!DEMO_MODE) {
+    const row = await apiFetch<Record<string, unknown>>("/api/bookings", {
+      method: "POST",
+      body: JSON.stringify({
+        lawyerId: input.lawyerId,
+        serviceId: input.serviceId,
+        start: input.slot.start,
+        client: input.client,
+        notes: input.notes,
+      }),
+    });
+    return { ...mapAppointmentRow(row), clientEmail: input.client.email };
+  }
+
   const db = getDB();
   const service = db.services.find((s) => s.id === input.serviceId);
   if (!service) throw new Error("Servicio no encontrado");
 
-  // revalidar que el slot siga libre (la BD real lo garantiza con el exclusion constraint)
   const clash = db.appointments.some(
     (a) =>
       a.lawyerId === input.lawyerId &&
@@ -93,9 +123,16 @@ export async function createBooking(input: BookingInput): Promise<Appointment> {
   return delay({ ...appointment }, 400);
 }
 
-/** Simula el pago (en producción: redirección a MercadoPago + webhook).
- *  Las consultas gratuitas se confirman directo, sin pasarela. */
+/** Pago: gateway 'demo' hasta integrar MercadoPago (split de pagos). */
 export async function payAppointment(id: string): Promise<Appointment> {
+  if (!DEMO_MODE) {
+    const row = await apiFetch<Record<string, unknown>>(
+      `/api/bookings?id=${id}&action=demo-pay`,
+      { method: "PATCH" },
+    );
+    return mapAppointmentRow(row);
+  }
+
   const db = getDB();
   const appointment = db.appointments.find((a) => a.id === id);
   if (!appointment) throw new Error("Turno no encontrado");
@@ -105,10 +142,11 @@ export async function payAppointment(id: string): Promise<Appointment> {
     appointment.videoRoomUrl = `https://legalhub.daily.co/demo-${appointment.id}`;
   }
   persist();
-  return delay({ ...appointment }, 900); // latencia de pasarela simulada
+  return delay({ ...appointment }, 900);
 }
 
 export async function listLawyerAppointments(lawyerId: string): Promise<Appointment[]> {
+  // neon: se cablea contra /api/me/appointments en la próxima etapa
   const list = getDB()
     .appointments.filter((a) => a.lawyerId === lawyerId)
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
@@ -122,7 +160,6 @@ export async function listClientAppointments(clientId: string): Promise<Appointm
     .sort((a, b) => b.startsAt.localeCompare(a.startsAt))
     .map((a) => {
       const lawyer = db.lawyers.find((l) => l.id === a.lawyerId);
-      // lawyer_notes nunca viaja al cliente (en BD: vista appointments_client_view)
       const { lawyerNotes: _private, ...visible } = a;
       return { ...visible, lawyerName: lawyer?.displayName, lawyerSlug: lawyer?.slug };
     });

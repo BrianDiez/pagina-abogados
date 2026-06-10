@@ -1,18 +1,11 @@
-import { DEMO_MODE } from "@/lib/demo";
-import { getSupabase } from "@/lib/supabase";
+import { DEMO_MODE } from "@/lib/backend";
 import { delay, getDB, persist, uid } from "@/data/demo/store";
+import { getLawyerReviews } from "./lawyers";
 import type { Review } from "@/types";
 
 export async function listReviews(lawyerId: string): Promise<Review[]> {
   if (!DEMO_MODE) {
-    const { data, error } = await getSupabase()
-      .from("reviews")
-      .select("*")
-      .eq("lawyer_id", lawyerId)
-      .eq("is_published", true)
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return data as unknown as Review[];
+    return getLawyerReviews(lawyerId); // viene del bundle del perfil (API neon)
   }
   return delay(
     getDB()
@@ -21,9 +14,10 @@ export async function listReviews(lawyerId: string): Promise<Review[]> {
   );
 }
 
-export async function createReview(
-  data: Omit<Review, "id" | "createdAt">,
-): Promise<Review> {
+export async function createReview(data: Omit<Review, "id" | "createdAt">): Promise<Review> {
+  if (!DEMO_MODE) {
+    throw new Error("Las reseñas via API se cablean en la próxima etapa (POST /api/reviews).");
+  }
   const db = getDB();
   const appointment = db.appointments.find((a) => a.id === data.appointmentId);
   if (!appointment || appointment.status !== "completed") {
@@ -39,6 +33,9 @@ export async function createReview(
 }
 
 export async function respondToReview(id: string, response: string): Promise<Review> {
+  if (!DEMO_MODE) {
+    throw new Error("Disponible al cablear el panel contra la API (próxima etapa).");
+  }
   const review = getDB().reviews.find((r) => r.id === id);
   if (!review) throw new Error("Reseña no encontrada");
   review.lawyerResponse = response;
