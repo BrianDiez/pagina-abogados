@@ -10,6 +10,7 @@ import { FirmProfilePage } from "@/pages/FirmProfilePage";
 import { FirmsDirectoryPage } from "@/pages/FirmsDirectoryPage";
 import { BookingPage } from "@/pages/BookingPage";
 import { PricingPage } from "@/pages/PricingPage";
+import { LegalValuesPage } from "@/pages/LegalValuesPage";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { RegisterClientPage } from "@/pages/auth/RegisterClientPage";
 import { RegisterLawyerPage } from "@/pages/auth/RegisterLawyerPage";
@@ -46,6 +47,7 @@ export default function App() {
             <Route path="/p/:slug" element={<ProfilePage />} />
             <Route path="/p/:slug/agendar" element={<BookingPage />} />
             <Route path="/precios" element={<PricingPage />} />
+            <Route path="/valores" element={<LegalValuesPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/registro" element={<RegisterClientPage />} />
             <Route path="/registro/profesional" element={<RegisterLawyerPage />} />

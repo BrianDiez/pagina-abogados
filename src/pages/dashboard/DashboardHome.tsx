@@ -17,7 +17,8 @@ import {
 import { useLawyer, useMyAppointments } from "./useLawyer";
 import { getAvailability, getServices } from "@/api/lawyers";
 import { useAuth } from "@/api/auth";
-import { cn, formatMoney, formatTime } from "@/lib/utils";
+import { unitsByCountry } from "@/data/legalUnits";
+import { cn, formatMoney, formatMoneyPrecise, formatTime } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -181,6 +182,31 @@ export function DashboardHome() {
           icon={<Eye className="size-5" />}
         />
       </div>
+
+      {/* Valores judiciales del país del profesional: el dato que buscan cada semana */}
+      <Card className="p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            {unitsByCountry(lawyer.country).map((u) => (
+              <div key={u.id}>
+                <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-gold-600">
+                  {u.code}
+                </p>
+                <p className="font-mono text-lg font-bold leading-tight text-navy-800">
+                  {formatMoneyPrecise(u.value, u.currency)}
+                </p>
+              </div>
+            ))}
+          </div>
+          <Link
+            to="/valores"
+            className="inline-flex items-center gap-1 text-sm font-medium text-navy-600 hover:text-navy-800"
+          >
+            Calculadora y fuentes
+            <ArrowRight className="size-4" />
+          </Link>
+        </div>
+      </Card>
 
       <Card className="p-6">
         <div className="mb-4 flex items-center justify-between">

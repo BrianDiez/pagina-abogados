@@ -21,6 +21,16 @@ export function formatMoney(amount: number, currency: string): string {
   return `${symbol} ${amount.toLocaleString("es-UY", { maximumFractionDigits: 0 })}`;
 }
 
+/** Con decimales exactos — para valores de unidades judiciales (UR 1.921,36). */
+export function formatMoneyPrecise(amount: number, currency: string): string {
+  const symbol = CURRENCY_SYMBOLS[currency] ?? currency;
+  const hasDecimals = !Number.isInteger(amount);
+  return `${symbol} ${amount.toLocaleString("es-UY", {
+    minimumFractionDigits: hasDecimals ? 2 : 0,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
 export function formatDateLong(date: Date | string): string {
   return format(new Date(date), "EEEE d 'de' MMMM", { locale: es });
 }

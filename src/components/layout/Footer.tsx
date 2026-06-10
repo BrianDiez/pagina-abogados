@@ -13,6 +13,13 @@ const columns = [
     ],
   },
   {
+    title: "Herramientas",
+    links: [
+      { to: "/valores", label: "Valor UR, BPC y UMA hoy" },
+      { to: "/valores", label: "Calculadora de unidades" },
+    ],
+  },
+  {
     title: "Especialidades",
     links: [
       { to: "/abogados?especialidad=familia", label: "Familia y divorcio" },
