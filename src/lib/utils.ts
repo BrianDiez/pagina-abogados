@@ -36,7 +36,7 @@ export function formatTime(date: Date | string): string {
 export function initials(name: string): string {
   return name
     .split(/\s+/)
-    .filter(Boolean)
+    .filter((w) => /^\p{L}|\p{N}/u.test(w)) // ignora "&", "y", símbolos sueltos
     .slice(0, 2)
     .map((w) => w[0]!.toUpperCase())
     .join("");

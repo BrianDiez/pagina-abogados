@@ -10,6 +10,7 @@ import { Logo } from "./Logo";
 const navItems = [
   { to: "/abogados", label: "Buscar profesionales" },
   { to: "/escribanos", label: "Escribanos" },
+  { to: "/estudios", label: "Estudios" },
   { to: "/precios", label: "Para profesionales" },
 ];
 

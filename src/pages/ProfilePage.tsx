@@ -13,6 +13,7 @@ import {
   ThumbsUp,
 } from "lucide-react";
 import { getLawyerBySlug, getServices } from "@/api/lawyers";
+import { getLawyerFirm } from "@/api/firms";
 import { listReviews } from "@/api/reviews";
 import { attorneyJsonLd, usePageMeta } from "@/lib/seo";
 import { specialtyLabel, MODALITY_LABELS } from "@/lib/constants";
@@ -80,6 +81,11 @@ export function ProfilePage() {
   const { data: reviews } = useQuery({
     queryKey: ["reviews", lawyer?.id],
     queryFn: () => listReviews(lawyer!.id),
+    enabled: !!lawyer,
+  });
+  const { data: firm } = useQuery({
+    queryKey: ["lawyer-firm", lawyer?.id],
+    queryFn: () => getLawyerFirm(lawyer!.id),
     enabled: !!lawyer,
   });
 
@@ -182,6 +188,18 @@ export function ProfilePage() {
                   </Link>
                 ))}
               </div>
+              {firm && (
+                <Link
+                  to={`/e/${firm.slug}`}
+                  className="mt-3 inline-flex items-center gap-2 rounded-xl border border-navy-100 bg-navy-50/60 px-3 py-2 transition-colors hover:border-gold-300 hover:bg-gold-50"
+                >
+                  <Avatar name={firm.name} src={firm.logoUrl} size="sm" />
+                  <span className="text-sm">
+                    <span className="text-navy-400">Miembro de </span>
+                    <span className="font-semibold text-navy-800">{firm.name}</span>
+                  </span>
+                </Link>
+              )}
             </div>
             <div className="flex gap-2 sm:flex-col">
               <Button variant="outline" size="sm" onClick={share}>

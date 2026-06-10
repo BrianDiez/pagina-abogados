@@ -139,6 +139,49 @@ export interface DirectoryFilters {
   sort?: "rating" | "consultations" | "price_asc" | "price_desc";
 }
 
+// ── Estudios jurídicos (modelo LinkedIn: el estudio es una entidad propia) ──
+
+export interface FirmSocials {
+  website?: string;
+  linkedin?: string;
+  instagram?: string;
+  x?: string;
+}
+
+export interface Firm {
+  id: string;
+  slug: string;
+  name: string;
+  tagline?: string;
+  description: string;
+  logoUrl?: string | null;
+  city: string;
+  country: "UY" | "AR";
+  email?: string;
+  phone?: string;
+  socials: FirmSocials;
+  foundedYear?: number;
+  specialties: string[];
+  ownerLawyerId: string;
+  memberIds: string[];
+  isVerified: boolean;
+}
+
+/** Consulta dirigida AL ESTUDIO (no a un profesional individual).
+ *  Regla de notificación: esto notifica al estudio; las reservas hechas en el
+ *  perfil individual de un abogado NO se comparten con el estudio. */
+export interface FirmInquiry {
+  id: string;
+  firmId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  specialty?: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
 export type Role = "lawyer" | "client" | "admin";
 
 export interface SessionUser {

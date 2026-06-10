@@ -4,6 +4,8 @@ import { addDays, setHours, setMinutes, subDays } from "date-fns";
 import type {
   Appointment,
   ClientRecord,
+  Firm,
+  FirmInquiry,
   Lawyer,
   Review,
   Service,
@@ -516,4 +518,82 @@ export const seedReviews: Review[] = [
   rev("r8", "l7", "x4", 5, "Hizo mi radicación completa sin que yo pisara una oficina pública. Checklist clarísimo, seguimiento semanal y cero estrés. La recomiendo a todos los expats.", "Paulo Ribeiro", "migratorio", 11),
   rev("r9", "l10", "x5", 5, "Por fin un abogado que entiende de tecnología. Armó el vesting de los fundadores y los términos del SaaS en una semana. Habla nuestro idioma.", "Federica Silva", "comercial", 14),
   rev("r10", "l4", "x6", 4, "Muy sólido el análisis de la inversión. Hubiera querido un informe algo más extenso por el precio, pero la asesoría en la llamada fue de primer nivel.", "James Whitford", "inmobiliario", 19),
+];
+
+// ─────────────────────────────────────────────────────────────
+// Estudios jurídicos
+// ─────────────────────────────────────────────────────────────
+export const seedFirms: Firm[] = [
+  {
+    id: "f1",
+    slug: "rios-asociados",
+    name: "Ríos & Asociados",
+    tagline: "Derecho de familia y empresa, con trato humano",
+    description:
+      "Estudio jurídico boutique en Montevideo fundado en 2015. Combinamos la experiencia en derecho de familia y sucesiones de la Dra. Ríos con las áreas laboral y de propiedad intelectual. Trabajamos 100% con agenda online: elegís al profesional, agendás y pagás desde la web. Atendemos en español e inglés, presencial y por videollamada.",
+    logoUrl: null,
+    city: "Montevideo",
+    country: "UY",
+    email: "contacto@riosasociados.uy",
+    phone: "+598 2901 5500",
+    socials: {
+      website: "https://riosasociados.uy",
+      linkedin: "https://linkedin.com/company/rios-asociados",
+      instagram: "https://instagram.com/riosasociados.uy",
+    },
+    foundedYear: 2015,
+    specialties: ["familia", "sucesiones", "laboral", "marcas"],
+    ownerLawyerId: "l1",
+    memberIds: ["l1", "l2", "l11"],
+    isVerified: true,
+  },
+  {
+    id: "f2",
+    slug: "pereyra-fernandez",
+    name: "Pereyra & Fernández",
+    tagline: "Defensa penal y derecho migratorio en Buenos Aires",
+    description:
+      "Más de 15 años defendiendo personas y acompañando extranjeros en Argentina. Urgencias penales las 24 horas y gestión migratoria completamente online para clientes en todo el mundo.",
+    logoUrl: null,
+    city: "Buenos Aires",
+    country: "AR",
+    email: "info@pereyrafernandez.com.ar",
+    phone: "+54 11 4811 2200",
+    socials: {
+      website: "https://pereyrafernandez.com.ar",
+      linkedin: "https://linkedin.com/company/pereyra-fernandez",
+      x: "https://x.com/pereyrapenal",
+    },
+    foundedYear: 2010,
+    specialties: ["penal", "migratorio", "internacional"],
+    ownerLawyerId: "l6",
+    memberIds: ["l6", "l7"],
+    isVerified: true,
+  },
+];
+
+export const seedFirmInquiries: FirmInquiry[] = [
+  {
+    id: "fi1",
+    firmId: "f1",
+    name: "Lucía Etcheverry",
+    email: "lucia.etche@gmail.com",
+    phone: "+598 99 871 234",
+    specialty: "sucesiones",
+    message:
+      "Hola, falleció mi madre hace un mes y somos cuatro hermanos. Necesitamos iniciar la sucesión de un apartamento en Pocitos y una cuenta bancaria. ¿Cómo serían los pasos y costos aproximados?",
+    isRead: false,
+    createdAt: subDays(new Date(), 1).toISOString(),
+  },
+  {
+    id: "fi2",
+    firmId: "f1",
+    name: "Marcos Techeira",
+    email: "mtecheira@empresa.com.uy",
+    specialty: "laboral",
+    message:
+      "Somos una pyme de 12 empleados y queremos regularizar contratos y armar un reglamento interno. ¿Hacen asesoría mensual para empresas?",
+    isRead: true,
+    createdAt: subDays(new Date(), 6).toISOString(),
+  },
 ];

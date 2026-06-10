@@ -4,6 +4,7 @@ import {
   CalendarDays,
   LayoutDashboard,
   Briefcase,
+  Building2,
   Clock,
   Users,
   Star,
@@ -21,6 +22,7 @@ const items = [
   { to: "/dashboard/clientes", label: "Clientes", icon: Users },
   { to: "/dashboard/resenas", label: "Reseñas", icon: Star },
   { to: "/dashboard/estadisticas", label: "Estadísticas", icon: BarChart3 },
+  { to: "/dashboard/estudio", label: "Mi estudio", icon: Building2 },
   { to: "/dashboard/configuracion", label: "Configuración", icon: Settings },
 ];
 

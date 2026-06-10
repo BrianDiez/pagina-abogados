@@ -4,6 +4,8 @@
 import type {
   Appointment,
   ClientRecord,
+  Firm,
+  FirmInquiry,
   Lawyer,
   Review,
   Service,
@@ -14,6 +16,8 @@ import {
   seedAppointments,
   seedAvailability,
   seedClients,
+  seedFirmInquiries,
+  seedFirms,
   seedLawyers,
   seedReviews,
   seedServices,
@@ -29,9 +33,12 @@ interface DemoDB {
   clients: ClientRecord[];
   appointments: Appointment[];
   reviews: Review[];
+  firms: Firm[];
+  firmInquiries: FirmInquiry[];
 }
 
-const KEY = "legalhub-demo-db-v1";
+// v2: se agregó firms/firmInquiries — el bump invalida semillas viejas sin el campo
+const KEY = "legalhub-demo-db-v2";
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 function freshDB(): DemoDB {
@@ -44,6 +51,8 @@ function freshDB(): DemoDB {
     clients: structuredClone(seedClients),
     appointments: structuredClone(seedAppointments),
     reviews: structuredClone(seedReviews),
+    firms: structuredClone(seedFirms),
+    firmInquiries: structuredClone(seedFirmInquiries),
   };
 }
 
@@ -55,7 +64,7 @@ export function getDB(): DemoDB {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as DemoDB;
-      if (Date.now() - parsed.seededAt < MAX_AGE_MS) {
+      if (Date.now() - parsed.seededAt < MAX_AGE_MS && parsed.firms) {
         db = parsed;
         return db;
       }

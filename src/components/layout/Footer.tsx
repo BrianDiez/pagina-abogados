@@ -7,6 +7,7 @@ const columns = [
     links: [
       { to: "/abogados", label: "Buscar abogados" },
       { to: "/escribanos", label: "Buscar escribanos" },
+      { to: "/estudios", label: "Estudios jurídicos" },
       { to: "/precios", label: "Planes y precios" },
       { to: "/registro/profesional", label: "Soy profesional" },
     ],
