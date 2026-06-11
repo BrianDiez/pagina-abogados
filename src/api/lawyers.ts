@@ -180,17 +180,18 @@ export async function getAvailability(lawyerId: string): Promise<WeeklyAvailabil
   return delay(getDB().availability.filter((a) => a.lawyerId === lawyerId), 100);
 }
 
-// ── Mutaciones del panel (demo; en neon se cablean contra /api/me/* en la
-//    siguiente etapa — ver SETUP-NEON.md) ──
-
-function assertDemo() {
-  if (!DEMO_MODE) {
-    throw new Error("Panel en modo lectura: las mutaciones via API llegan en la próxima etapa.");
-  }
-}
+// ── Mutaciones del panel del profesional ──
 
 export async function updateLawyerProfile(id: string, patch: Partial<Lawyer>): Promise<Lawyer> {
-  assertDemo();
+  if (!DEMO_MODE) {
+    const row = await apiFetch<Record<string, unknown>>("/api/me/profile", {
+      method: "PATCH",
+      auth: true,
+      body: JSON.stringify(patch),
+    });
+    bundleCache.delete(id);
+    return mapLawyer(row);
+  }
   const db = getDB();
   const lawyer = db.lawyers.find((l) => l.id === id);
   if (!lawyer) throw new Error("Profesional no encontrado");
@@ -200,7 +201,15 @@ export async function updateLawyerProfile(id: string, patch: Partial<Lawyer>): P
 }
 
 export async function createService(data: Omit<Service, "id">): Promise<Service> {
-  assertDemo();
+  if (!DEMO_MODE) {
+    const row = await apiFetch<Record<string, unknown>>("/api/me/services", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify(data),
+    });
+    bundleCache.delete(data.lawyerId);
+    return mapService(row);
+  }
   const service: Service = { ...data, id: uid("svc") };
   getDB().services.push(service);
   persist();
@@ -208,7 +217,15 @@ export async function createService(data: Omit<Service, "id">): Promise<Service>
 }
 
 export async function updateService(id: string, patch: Partial<Service>): Promise<Service> {
-  assertDemo();
+  if (!DEMO_MODE) {
+    const row = await apiFetch<Record<string, unknown>>("/api/me/services", {
+      method: "PATCH",
+      auth: true,
+      body: JSON.stringify({ id, ...patch }),
+    });
+    bundleCache.delete(String(row.lawyer_id));
+    return mapService(row);
+  }
   const service = getDB().services.find((s) => s.id === id);
   if (!service) throw new Error("Servicio no encontrado");
   Object.assign(service, patch);
@@ -217,7 +234,11 @@ export async function updateService(id: string, patch: Partial<Service>): Promis
 }
 
 export async function deleteService(id: string): Promise<void> {
-  assertDemo();
+  if (!DEMO_MODE) {
+    await apiFetch<void>(`/api/me/services?id=${id}`, { method: "DELETE", auth: true });
+    bundleCache.clear();
+    return;
+  }
   const service = getDB().services.find((s) => s.id === id);
   if (service) {
     service.isActive = false;
@@ -230,7 +251,30 @@ export async function saveAvailability(
   lawyerId: string,
   rows: Omit<WeeklyAvailability, "id" | "lawyerId">[],
 ): Promise<WeeklyAvailability[]> {
-  assertDemo();
+  if (!DEMO_MODE) {
+    const created = await apiFetch<
+      { id: string; day_of_week: number; start_time: string; end_time: string }[]
+    >("/api/me/availability", {
+      method: "PUT",
+      auth: true,
+      body: JSON.stringify({
+        rows: rows.map((r) => ({
+          dayOfWeek: r.dayOfWeek,
+          startTime: r.startTime,
+          endTime: r.endTime,
+        })),
+      }),
+    });
+    bundleCache.delete(lawyerId);
+    return created.map((a) => ({
+      id: a.id,
+      lawyerId,
+      dayOfWeek: a.day_of_week,
+      startTime: a.start_time.slice(0, 5),
+      endTime: a.end_time.slice(0, 5),
+      isActive: true,
+    }));
+  }
   const db = getDB();
   db.availability = db.availability.filter((a) => a.lawyerId !== lawyerId);
   const created = rows.map((r) => ({ ...r, id: uid("av"), lawyerId }));

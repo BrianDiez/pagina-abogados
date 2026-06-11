@@ -39,8 +39,9 @@ const queryClient = new QueryClient({
   },
 });
 
-function MaybeClerk({ children }: { children: React.ReactNode }) {
-  if (BACKEND !== "neon") return <>{children}</>;
+// demo: AuthProvider local · neon: ClerkRoot (provee el mismo AuthContext)
+function AuthBoundary({ children }: { children: React.ReactNode }) {
+  if (BACKEND !== "neon") return <AuthProvider>{children}</AuthProvider>;
   return (
     <Suspense fallback={null}>
       <ClerkRoot>{children}</ClerkRoot>
@@ -51,8 +52,7 @@ function MaybeClerk({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <MaybeClerk>
-      <AuthProvider>
+      <AuthBoundary>
         <BrowserRouter>
           <ScrollToTop />
           <Routes>
@@ -83,8 +83,7 @@ export default function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </BrowserRouter>
-      </AuthProvider>
-      </MaybeClerk>
+      </AuthBoundary>
     </QueryClientProvider>
   );
 }

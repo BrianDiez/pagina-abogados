@@ -7,10 +7,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") return res.status(405).json({ error: "Método no permitido" });
   const slug = String(req.query.slug ?? "");
 
+  // acepta slug (perfil público) o uuid (panel del profesional)
   const lawyers = await sql`
     select l.*, s.avg_rating, s.review_count, s.completed_consultations, s.recommend_pct
     from lawyers l join lawyer_stats s on s.lawyer_id = l.id
-    where l.slug = ${slug} and l.is_active
+    where (l.slug = ${slug} or l.id::text = ${slug}) and l.is_active
   `;
   if (lawyers.length === 0) return res.status(404).json({ error: "Perfil no encontrado" });
   const lawyer = lawyers[0]!;

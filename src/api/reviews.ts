@@ -1,4 +1,5 @@
 import { DEMO_MODE } from "@/lib/backend";
+import { apiFetch } from "@/lib/http";
 import { delay, getDB, persist, uid } from "@/data/demo/store";
 import { getLawyerReviews } from "./lawyers";
 import type { Review } from "@/types";
@@ -16,7 +17,22 @@ export async function listReviews(lawyerId: string): Promise<Review[]> {
 
 export async function createReview(data: Omit<Review, "id" | "createdAt">): Promise<Review> {
   if (!DEMO_MODE) {
-    throw new Error("Las reseñas via API se cablean en la próxima etapa (POST /api/reviews).");
+    const row = await apiFetch<Record<string, unknown>>("/api/reviews", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({
+        appointmentId: data.appointmentId,
+        ratingOverall: data.ratingOverall,
+        textReview: data.textReview,
+        wouldRecommend: data.wouldRecommend,
+        isAnonymous: data.isAnonymous,
+      }),
+    });
+    return {
+      ...data,
+      id: String(row.id),
+      createdAt: String(row.created_at),
+    };
   }
   const db = getDB();
   const appointment = db.appointments.find((a) => a.id === data.appointmentId);
@@ -34,7 +50,23 @@ export async function createReview(data: Omit<Review, "id" | "createdAt">): Prom
 
 export async function respondToReview(id: string, response: string): Promise<Review> {
   if (!DEMO_MODE) {
-    throw new Error("Disponible al cablear el panel contra la API (próxima etapa).");
+    const row = await apiFetch<Record<string, unknown>>("/api/reviews", {
+      method: "PATCH",
+      auth: true,
+      body: JSON.stringify({ id, response }),
+    });
+    return {
+      id: String(row.id),
+      lawyerId: String(row.lawyer_id),
+      appointmentId: String(row.appointment_id),
+      ratingOverall: Number(row.rating_overall),
+      textReview: String(row.text_review ?? ""),
+      wouldRecommend: Boolean(row.would_recommend),
+      isAnonymous: Boolean(row.is_anonymous),
+      clientName: "Cliente",
+      lawyerResponse: String(row.lawyer_response ?? ""),
+      createdAt: String(row.created_at),
+    };
   }
   const review = getDB().reviews.find((r) => r.id === id);
   if (!review) throw new Error("Reseña no encontrada");

@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { lazy, Suspense, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { BadgeCheck, ChevronLeft } from "lucide-react";
 import { useAuth } from "@/api/auth";
+import { BACKEND } from "@/lib/backend";
 import { CITIES, SPECIALTIES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/Header";
@@ -12,10 +13,17 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FieldLabel, Input, Select, Textarea } from "@/components/ui/Field";
 
+const ClerkSignUp = lazy(() =>
+  import("@/api/clerkAuth").then((m) => ({ default: m.ClerkSignUp })),
+);
+
+const IS_NEON = BACKEND === "neon";
+
+// En neon la cuenta (email/contraseña) la crea Clerk: esos campos no aplican
 const schema = z.object({
   name: z.string().min(3, "Ingresá tu nombre completo"),
-  email: z.string().email("Email inválido"),
-  password: z.string().min(8, "Mínimo 8 caracteres"),
+  email: IS_NEON ? z.string().optional() : z.string().email("Email inválido"),
+  password: IS_NEON ? z.string().optional() : z.string().min(8, "Mínimo 8 caracteres"),
   title: z.string(),
   professionalType: z.enum(["lawyer", "notary", "tax_advisor", "other"]),
   country: z.enum(["UY", "AR"]),
@@ -26,17 +34,46 @@ const schema = z.object({
 });
 type Form = z.infer<typeof schema>;
 
+const FIRST_STEP = IS_NEON ? 1 : 0;
+
 export function RegisterLawyerPage() {
-  const { registerLawyer } = useAuth();
+  const { registerLawyer, user } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(FIRST_STEP);
   const [specialties, setSpecialties] = useState<string[]>([]);
   const [specialtiesError, setSpecialtiesError] = useState<string | null>(null);
 
   const form = useForm<Form>({
     resolver: zodResolver(schema),
-    defaultValues: { title: "Dr.", professionalType: "lawyer", country: "UY", yearsExperience: 0 },
+    defaultValues: {
+      title: "Dr.",
+      professionalType: "lawyer",
+      country: "UY",
+      yearsExperience: 0,
+      name: IS_NEON ? (user?.name ?? "") : "",
+    },
   });
+
+  // Backend real: primero la cuenta Clerk, después el perfil profesional
+  if (IS_NEON && !user) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <div className="mx-auto flex max-w-md flex-col items-center px-4 py-12 sm:px-6">
+          <p className="mb-5 text-center text-sm text-navy-500">
+            <strong className="text-navy-800">Paso 1 de 2:</strong> creá tu cuenta. Después
+            completás tu perfil profesional (2 minutos).
+          </p>
+          <Suspense fallback={<div className="h-96 w-full animate-pulse rounded-2xl bg-navy-100/50" />}>
+            <ClerkSignUp signInUrl="/login" forceRedirectUrl="/registro/profesional" />
+          </Suspense>
+        </div>
+      </div>
+    );
+  }
+  if (IS_NEON && user?.lawyerId) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   function toggleSpecialty(id: string) {
     setSpecialtiesError(null);
@@ -51,7 +88,11 @@ export function RegisterLawyerPage() {
       setStep(1);
       return;
     }
-    await registerLawyer({ ...data, specialties });
+    await registerLawyer({
+      ...data,
+      email: data.email ?? user?.email ?? "",
+      specialties,
+    });
     navigate("/dashboard");
   }
 
@@ -232,7 +273,7 @@ export function RegisterLawyerPage() {
             )}
 
             <div className="flex justify-between pt-2">
-              {step > 0 ? (
+              {step > FIRST_STEP ? (
                 <Button variant="ghost" onClick={() => setStep((s) => s - 1)}>
                   <ChevronLeft className="size-4" />
                   Atrás

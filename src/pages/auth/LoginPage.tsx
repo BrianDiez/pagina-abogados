@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Sparkles } from "lucide-react";
 import { DEMO_ACCOUNTS, useAuth } from "@/api/auth";
+import { BACKEND } from "@/lib/backend";
 import { Header } from "@/components/layout/Header";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FieldLabel, Input } from "@/components/ui/Field";
+
+const ClerkSignIn = lazy(() =>
+  import("@/api/clerkAuth").then((m) => ({ default: m.ClerkSignIn })),
+);
 
 const schema = z.object({
   email: z.string().email("Email inválido"),
@@ -21,6 +26,26 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const form = useForm<Form>({ resolver: zodResolver(schema) });
+
+  // Backend real: el login lo maneja Clerk (email, Google, magic links)
+  if (BACKEND === "neon") {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <div className="mx-auto flex max-w-md flex-col items-center px-4 py-16 sm:px-6">
+          <Suspense fallback={<div className="h-96 w-full animate-pulse rounded-2xl bg-navy-100/50" />}>
+            <ClerkSignIn signUpUrl="/registro" forceRedirectUrl="/dashboard" />
+          </Suspense>
+          <p className="mt-6 text-center text-sm text-navy-500">
+            ¿Sos profesional y todavía no tenés perfil?{" "}
+            <Link to="/registro/profesional" className="font-medium text-navy-800 underline">
+              Creá tu perfil
+            </Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   async function submit(data: Form) {
     setError(null);

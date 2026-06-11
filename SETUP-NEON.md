@@ -46,11 +46,15 @@ pasos (15-20 minutos, no se necesita tarjeta en ninguno).
 
 | Flujo | demo | neon |
 |---|---|---|
-| Directorio, perfil público, slots, reserva, pago-demo | ✅ | ✅ (API + Postgres real) |
-| Login/registro | ✅ simulado | ✅ Clerk (provider montado) |
-| Panel del profesional (agenda, servicios, etc.) | ✅ | 🔜 próxima etapa: endpoints `/api/me/*` siguiendo el patrón de `api/me.ts` |
-| Reviews escribir / estudios gestionar | ✅ | 🔜 misma etapa |
-| Pagos MercadoPago split | — | 🔜 portar `supabase/functions/create-payment-preference` a `api/` (la lógica ya está escrita) |
+| Directorio, perfil público, slots, reserva | ✅ | ✅ (API + Postgres real) |
+| Login / registro de cliente | ✅ simulado | ✅ Clerk (SignIn/SignUp) |
+| Registro de profesional + onboarding | ✅ | ✅ Clerk + `POST /api/me` |
+| Panel: agenda, servicios, disponibilidad, perfil, clientes, stats | ✅ | ✅ `/api/me/*` |
+| Reviews (escribir + responder) | ✅ | ✅ `/api/reviews` |
+| Estudios: directorio, perfil, contacto, bandeja | ✅ | ✅ |
+| Estudios: crear/editar/miembros | ✅ | 🔜 (solo demo por ahora) |
+| Pagos | simulado | gateway `demo` (PATCH demo-pay) — 🔜 MercadoPago split (lógica lista en `supabase/functions/create-payment-preference`, portar a `api/`) |
+| Emails (confirmaciones, recordatorios) | — | 🔜 Resend (requiere `RESEND_API_KEY`) |
 | Subida de archivos | — | ✅ presigned R2 (`api/uploads.ts`) |
 
 ## Notas de arquitectura

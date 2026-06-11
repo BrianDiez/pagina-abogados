@@ -19,7 +19,7 @@ export const DEMO_ACCOUNTS = {
   client: { email: "cliente@legalhub.app", password: "demo1234" },
 };
 
-interface RegisterLawyerInput {
+export interface RegisterLawyerInput {
   name: string;
   email: string;
   title: string;
@@ -32,7 +32,7 @@ interface RegisterLawyerInput {
   yearsExperience: number;
 }
 
-interface AuthContextValue {
+export interface AuthContextValue {
   user: SessionUser | null;
   login: (email: string, password: string) => Promise<SessionUser>;
   registerLawyer: (data: RegisterLawyerInput) => Promise<SessionUser>;
@@ -40,7 +40,8 @@ interface AuthContextValue {
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+/** Contexto compartido: lo provee DemoAuthProvider (demo) o NeonAuthProvider (Clerk). */
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 function loadSession(): SessionUser | null {
   try {

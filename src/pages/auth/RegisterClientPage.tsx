@@ -1,12 +1,18 @@
+import { lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/api/auth";
+import { BACKEND } from "@/lib/backend";
 import { Header } from "@/components/layout/Header";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FieldLabel, Input } from "@/components/ui/Field";
+
+const ClerkSignUp = lazy(() =>
+  import("@/api/clerkAuth").then((m) => ({ default: m.ClerkSignUp })),
+);
 
 const schema = z.object({
   name: z.string().min(3, "Ingresá tu nombre"),
@@ -19,6 +25,19 @@ export function RegisterClientPage() {
   const { registerClient } = useAuth();
   const navigate = useNavigate();
   const form = useForm<Form>({ resolver: zodResolver(schema) });
+
+  if (BACKEND === "neon") {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <div className="mx-auto flex max-w-md flex-col items-center px-4 py-16 sm:px-6">
+          <Suspense fallback={<div className="h-96 w-full animate-pulse rounded-2xl bg-navy-100/50" />}>
+            <ClerkSignUp signInUrl="/login" forceRedirectUrl="/mi-cuenta" />
+          </Suspense>
+        </div>
+      </div>
+    );
+  }
 
   async function submit(data: Form) {
     await registerClient(data);

@@ -146,7 +146,15 @@ export async function payAppointment(id: string): Promise<Appointment> {
 }
 
 export async function listLawyerAppointments(lawyerId: string): Promise<Appointment[]> {
-  // neon: se cablea contra /api/me/appointments en la próxima etapa
+  if (!DEMO_MODE) {
+    const rows = await apiFetch<Record<string, unknown>[]>("/api/me/appointments", {
+      auth: true,
+    });
+    return rows.map((r) => ({
+      ...mapAppointmentRow(r),
+      lawyerNotes: (r.lawyer_notes as string) ?? undefined,
+    }));
+  }
   const list = getDB()
     .appointments.filter((a) => a.lawyerId === lawyerId)
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
@@ -154,6 +162,14 @@ export async function listLawyerAppointments(lawyerId: string): Promise<Appointm
 }
 
 export async function listClientAppointments(clientId: string): Promise<Appointment[]> {
+  if (!DEMO_MODE) {
+    const rows = await apiFetch<Record<string, unknown>[]>("/api/me/bookings", { auth: true });
+    return rows.map((r) => ({
+      ...mapAppointmentRow(r),
+      lawyerName: (r.lawyer_name as string) ?? undefined,
+      lawyerSlug: (r.lawyer_slug as string) ?? undefined,
+    }));
+  }
   const db = getDB();
   const list = db.appointments
     .filter((a) => a.clientId === clientId)
@@ -173,6 +189,14 @@ export async function updateAppointment(
     cancelledBy?: "lawyer" | "client";
   },
 ): Promise<Appointment> {
+  if (!DEMO_MODE) {
+    const row = await apiFetch<Record<string, unknown>>("/api/me/appointments", {
+      method: "PATCH",
+      auth: true,
+      body: JSON.stringify({ id, ...patch }),
+    });
+    return mapAppointmentRow(row);
+  }
   const appointment = getDB().appointments.find((a) => a.id === id);
   if (!appointment) throw new Error("Turno no encontrado");
   Object.assign(appointment, patch);
