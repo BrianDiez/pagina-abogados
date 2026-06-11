@@ -1,15 +1,12 @@
-// GET /api/me/bookings — consultas del CLIENTE autenticado (match por email
-// de Clerk: cubre reservas hechas como invitado antes de crear la cuenta).
-// Nunca expone lawyer_notes.
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { requireSession } from "../_lib/auth";
-import { sql } from "../_lib/db";
+// GET /api/me/bookings — consultas del cliente autenticado (sin lawyer_notes)
+import { getSql, json, error, type Handler } from "../../../server/db";
+import { getSession } from "../../../server/auth";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "GET") return res.status(405).json({ error: "Método no permitido" });
-  const session = await requireSession(req, res);
-  if (!session) return;
+export const onRequestGet: Handler = async ({ request, env }) => {
+  const session = await getSession(request, env);
+  if (!session) return error("No autorizado", 401);
 
+  const sql = getSql(env);
   const rows = await sql`
     select a.id, a.lawyer_id, a.client_id, a.service_id, a.status, a.starts_at,
            a.ends_at, a.modality, a.client_notes, a.video_room_url, a.price,
@@ -24,5 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
        or c.user_id = ${session.userId}
     order by a.starts_at desc
   `;
-  return res.status(200).json(rows);
-}
+  return json(rows);
+};
+
+export const onRequest: Handler = () => error("Método no permitido", 405);

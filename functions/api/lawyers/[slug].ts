@@ -1,19 +1,16 @@
-// GET /api/lawyers/:slug — bundle del perfil público:
-// profesional + servicios + reseñas + disponibilidad + estudio (afiliación)
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { sql } from "../_lib/db";
+// GET /api/lawyers/:slug — bundle del perfil público (acepta slug o uuid)
+import { getSql, json, error, type Handler } from "../../../server/db";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "GET") return res.status(405).json({ error: "Método no permitido" });
-  const slug = String(req.query.slug ?? "");
+export const onRequestGet: Handler = async ({ env, params }) => {
+  const slug = String(params.slug ?? "");
+  const sql = getSql(env);
 
-  // acepta slug (perfil público) o uuid (panel del profesional)
   const lawyers = await sql`
     select l.*, s.avg_rating, s.review_count, s.completed_consultations, s.recommend_pct
     from lawyers l join lawyer_stats s on s.lawyer_id = l.id
     where (l.slug = ${slug} or l.id::text = ${slug}) and l.is_active
   `;
-  if (lawyers.length === 0) return res.status(404).json({ error: "Perfil no encontrado" });
+  if (lawyers.length === 0) return error("Perfil no encontrado", 404);
   const lawyer = lawyers[0]!;
 
   const [services, reviews, availability, firm] = await Promise.all([
@@ -32,9 +29,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         where fm.lawyer_id = ${lawyer.id} and f.is_active limit 1`,
   ]);
 
-  // contador de vistas, sin bloquear la respuesta
-  sql`update lawyers set profile_views = profile_views + 1 where id = ${lawyer.id}`.catch(() => {});
+  sql`update lawyers set profile_views = profile_views + 1 where id = ${lawyer.id}`.catch(
+    () => {},
+  );
 
-  res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
-  return res.status(200).json({ lawyer, services, reviews, availability, firm: firm[0] ?? null });
-}
+  return json(
+    { lawyer, services, reviews, availability, firm: firm[0] ?? null },
+    200,
+    { "cache-control": "public, s-maxage=60, stale-while-revalidate=300" },
+  );
+};
+
+export const onRequest: Handler = () => error("Método no permitido", 405);

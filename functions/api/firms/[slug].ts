@@ -1,15 +1,14 @@
-// GET /api/firms/:slug — estudio + equipo (con stats de cada profesional)
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { sql } from "../_lib/db";
+// GET /api/firms/:slug — estudio + equipo con stats (acepta slug o uuid)
+import { getSql, json, error, type Handler } from "../../../server/db";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "GET") return res.status(405).json({ error: "Método no permitido" });
-  const slug = String(req.query.slug ?? "");
+export const onRequestGet: Handler = async ({ env, params }) => {
+  const slug = String(params.slug ?? "");
+  const sql = getSql(env);
 
   const firms = await sql`
     select * from firms where (slug = ${slug} or id::text = ${slug}) and is_active
   `;
-  if (firms.length === 0) return res.status(404).json({ error: "Estudio no encontrado" });
+  if (firms.length === 0) return error("Estudio no encontrado", 404);
   const firm = firms[0]!;
 
   const members = await sql`
@@ -25,6 +24,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     order by fm.role desc, l.display_name
   `;
 
-  res.setHeader("Cache-Control", "s-maxage=120, stale-while-revalidate=600");
-  return res.status(200).json({ firm, members });
-}
+  return json({ firm, members }, 200, {
+    "cache-control": "public, s-maxage=120, stale-while-revalidate=600",
+  });
+};
+
+export const onRequest: Handler = () => error("Método no permitido", 405);

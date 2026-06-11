@@ -27,8 +27,9 @@ de ejemplo locales (12 profesionales, reseñas, agenda con turnos), sin backend.
 
 - `neon/migrations/0001_init.sql` — esquema Postgres completo (anti doble-reserva,
   slots en SQL, estudios, unidades judiciales)
-- `api/` — serverless functions de Vercel (directorio, perfil, slots, reservas,
-  sesión Clerk, presigned uploads a R2)
+- `functions/api/` — Cloudflare Pages Functions (directorio, perfil, slots,
+  reservas, panel `/api/me/*`, reviews, estudios, presigned uploads a R2);
+  código compartido en `server/`
 - `VITE_BACKEND=neon` + las env vars de `.env.example` activan el modo real
 
 > La carpeta `supabase/` queda como implementación alternativa de referencia
@@ -38,7 +39,7 @@ de ejemplo locales (12 profesionales, reseñas, agenda con turnos), sin backend.
 
 React 19 · Vite · TypeScript · Tailwind v4 · React Router 7 · TanStack Query ·
 react-hook-form + zod · framer-motion · **Neon** (Postgres serverless) · **Clerk** (auth) ·
-**Cloudflare R2** (storage) · Vercel Functions (API)
+**Cloudflare Pages** (hosting + Functions API) · **Cloudflare R2** (storage)
 
 ## 📐 Decisiones de diseño clave
 
