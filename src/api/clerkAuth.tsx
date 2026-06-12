@@ -19,7 +19,7 @@ interface MeResponse {
 }
 
 function NeonAuthProvider({ children }: { children: ReactNode }) {
-  const { getToken, isSignedIn, signOut } = useClerkAuth();
+  const { getToken, isSignedIn, isLoaded, signOut } = useClerkAuth();
   const { user: clerkUser } = useUser();
   const queryClient = useQueryClient();
 
@@ -28,12 +28,18 @@ function NeonAuthProvider({ children }: { children: ReactNode }) {
     return () => setTokenGetter(null);
   }, [getToken, isSignedIn]);
 
-  const { data: me } = useQuery({
+  const { data: me, isPending: mePending } = useQuery({
     queryKey: ["me", clerkUser?.id],
     queryFn: () => apiFetch<MeResponse>("/api/me", { auth: true }),
     enabled: !!isSignedIn,
     staleTime: 60_000,
+    retry: 2,
   });
+
+  // Crítico: mientras Clerk inicializa o /api/me está en vuelo, la sesión está
+  // "cargando" — NO "deslogueada". Confundirlas causaba un bucle de redirects
+  // (SignUp montado con sesión activa → redirect a la misma página → loop).
+  const loading = !isLoaded || (!!isSignedIn && mePending);
 
   const user: SessionUser | null = useMemo(() => {
     if (!isSignedIn || !clerkUser || !me) return null;
@@ -77,6 +83,7 @@ function NeonAuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextValue = useMemo(
     () => ({
       user,
+      loading,
       // En neon el login/alta de cuenta lo maneja la UI de Clerk:
       login: async () => {
         throw new Error("Usá el formulario de Clerk para ingresar.");
@@ -87,7 +94,7 @@ function NeonAuthProvider({ children }: { children: ReactNode }) {
       },
       logout: () => void signOut(),
     }),
-    [user, registerLawyer, signOut],
+    [user, loading, registerLawyer, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

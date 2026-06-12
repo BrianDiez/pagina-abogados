@@ -14,7 +14,7 @@ import { Button, ButtonLink } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { StarInput } from "@/components/ui/Rating";
 import { Textarea } from "@/components/ui/Field";
-import { EmptyState } from "@/components/ui/misc";
+import { EmptyState, FullPageLoader } from "@/components/ui/misc";
 import type { Appointment, AppointmentStatus } from "@/types";
 
 const statusBadge: Record<AppointmentStatus, { label: string; tone: "navy" | "gold" | "green" | "red" | "warn" | "neutral" }> = {
@@ -97,7 +97,7 @@ function ReviewModal({
 }
 
 export function ClientAccountPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [reviewing, setReviewing] = useState<Appointment | null>(null);
 
   const { data: appointments } = useQuery({
@@ -106,6 +106,7 @@ export function ClientAccountPage() {
     enabled: !!user?.clientId,
   });
 
+  if (loading) return <FullPageLoader />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === "lawyer") return <Navigate to="/dashboard" replace />;
 

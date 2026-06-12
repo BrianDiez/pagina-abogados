@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/api/auth";
 import { cn } from "@/lib/utils";
+import { FullPageLoader } from "@/components/ui/misc";
 import { Header } from "./Header";
 
 const items = [
@@ -36,8 +37,9 @@ const mobileTabs = [
 ];
 
 export function DashboardLayout() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
+  if (loading) return <FullPageLoader />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role !== "lawyer") return <Navigate to="/mi-cuenta" replace />;
 

@@ -34,6 +34,9 @@ export interface RegisterLawyerInput {
 
 export interface AuthContextValue {
   user: SessionUser | null;
+  /** true mientras la sesión se está resolviendo (Clerk cargando o /api/me en vuelo).
+   *  Las páginas NUNCA deben redirigir ni mostrar SignIn/SignUp mientras loading. */
+  loading: boolean;
   login: (email: string, password: string) => Promise<SessionUser>;
   registerLawyer: (data: RegisterLawyerInput) => Promise<SessionUser>;
   registerClient: (data: { name: string; email: string; phone: string }) => Promise<SessionUser>;
@@ -182,7 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => saveSession(null), [saveSession]);
 
   const value = useMemo(
-    () => ({ user, login, registerLawyer, registerClient, logout }),
+    () => ({ user, loading: false, login, registerLawyer, registerClient, logout }),
     [user, login, registerLawyer, registerClient, logout],
   );
 

@@ -87,6 +87,18 @@ export function EmptyState({
   );
 }
 
+/** Pantalla de carga para mientras se resuelve la sesión (evita redirects prematuros). */
+export function FullPageLoader() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-cream">
+      <div className="flex flex-col items-center gap-3">
+        <span className="size-8 animate-spin rounded-full border-[3px] border-navy-200 border-t-gold-500" />
+        <p className="text-sm text-navy-400">Cargando…</p>
+      </div>
+    </div>
+  );
+}
+
 export function StatCard({
   label,
   value,

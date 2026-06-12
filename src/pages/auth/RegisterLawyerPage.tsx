@@ -12,6 +12,7 @@ import { Header } from "@/components/layout/Header";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FieldLabel, Input, Select, Textarea } from "@/components/ui/Field";
+import { FullPageLoader } from "@/components/ui/misc";
 
 const ClerkSignUp = lazy(() =>
   import("@/api/clerkAuth").then((m) => ({ default: m.ClerkSignUp })),
@@ -37,7 +38,7 @@ type Form = z.infer<typeof schema>;
 const FIRST_STEP = IS_NEON ? 1 : 0;
 
 export function RegisterLawyerPage() {
-  const { registerLawyer, user } = useAuth();
+  const { registerLawyer, user, loading } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(FIRST_STEP);
   const [specialties, setSpecialties] = useState<string[]>([]);
@@ -53,6 +54,12 @@ export function RegisterLawyerPage() {
       name: IS_NEON ? (user?.name ?? "") : "",
     },
   });
+
+  // Mientras la sesión se resuelve: spinner. Mostrar SignUp acá con sesión
+  // activa causaba el bucle de redirects a esta misma página.
+  if (IS_NEON && loading) {
+    return <FullPageLoader />;
+  }
 
   // Backend real: primero la cuenta Clerk, después el perfil profesional
   if (IS_NEON && !user) {

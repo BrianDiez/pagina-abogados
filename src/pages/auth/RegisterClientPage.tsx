@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,6 +9,7 @@ import { Header } from "@/components/layout/Header";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FieldLabel, Input } from "@/components/ui/Field";
+import { FullPageLoader } from "@/components/ui/misc";
 
 const ClerkSignUp = lazy(() =>
   import("@/api/clerkAuth").then((m) => ({ default: m.ClerkSignUp })),
@@ -22,11 +23,13 @@ const schema = z.object({
 type Form = z.infer<typeof schema>;
 
 export function RegisterClientPage() {
-  const { registerClient } = useAuth();
+  const { registerClient, user, loading } = useAuth();
   const navigate = useNavigate();
   const form = useForm<Form>({ resolver: zodResolver(schema) });
 
   if (BACKEND === "neon") {
+    if (loading) return <FullPageLoader />;
+    if (user) return <Navigate to="/mi-cuenta" replace />;
     return (
       <div className="min-h-screen">
         <Header />
