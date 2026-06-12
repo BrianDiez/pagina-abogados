@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, UsersRound } from "lucide-react";
 import { listLawyers } from "@/api/lawyers";
 import { usePageMeta } from "@/lib/seo";
-import { CITIES, MODALITY_LABELS, SPECIALTIES, specialtyLabel } from "@/lib/constants";
+import { CITIES_BY_COUNTRY, MODALITY_LABELS, SPECIALTIES, specialtyLabel } from "@/lib/constants";
 import type { DirectoryFilters, Modality } from "@/types";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -83,11 +83,20 @@ export function DirectoryPage({ notariesOnly = false }: { notariesOnly?: boolean
             </div>
             <Select value={filters.city ?? ""} onChange={(e) => setParam("ciudad", e.target.value)}>
               <option value="">Todas las ciudades</option>
-              {CITIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
+              <optgroup label="🇺🇾 Uruguay">
+                {CITIES_BY_COUNTRY.UY.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="🇦🇷 Argentina">
+                {CITIES_BY_COUNTRY.AR.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </optgroup>
             </Select>
             <Select value={filters.modality ?? ""} onChange={(e) => setParam("modalidad", e.target.value)}>
               <option value="">Cualquier modalidad</option>

@@ -26,7 +26,10 @@ export interface RegisterLawyerInput {
   professionalType: Lawyer["professionalType"];
   city: string;
   country: "UY" | "AR";
+  /** string visible compuesto (derivado de registrations) */
   matriculaNumber: string;
+  /** matrículas por jurisdicción — en AR suele haber varias */
+  registrations?: import("@/types").ProfessionalRegistration[];
   specialties: string[];
   bio: string;
   yearsExperience: number;
@@ -130,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         photoUrl: null,
         yearsExperience: data.yearsExperience,
         matriculaNumber: data.matriculaNumber,
+        registrations: data.registrations ?? [],
         isVerified: false,
         country: data.country,
         city: data.city,

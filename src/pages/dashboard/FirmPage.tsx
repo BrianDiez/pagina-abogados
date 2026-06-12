@@ -29,7 +29,7 @@ import {
   updateFirm,
 } from "@/api/firms";
 import { listLawyers } from "@/api/lawyers";
-import { CITIES, specialtyLabel } from "@/lib/constants";
+import { CITIES_BY_COUNTRY, specialtyLabel } from "@/lib/constants";
 import { cn, formatDateShort } from "@/lib/utils";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
@@ -58,6 +58,7 @@ function CreateFirmCard({ lawyerId, onCreated }: { lawyerId: string; onCreated: 
     resolver: zodResolver(createSchema),
     defaultValues: { country: "UY" },
   });
+  const firmCountry = form.watch("country");
   const mutation = useMutation({
     mutationFn: (data: CreateForm) =>
       createFirm({
@@ -114,7 +115,7 @@ function CreateFirmCard({ lawyerId, onCreated }: { lawyerId: string; onCreated: 
             <FieldLabel label="Ciudad" required error={form.formState.errors.city?.message}>
               <Select {...form.register("city")}>
                 <option value="">Elegir…</option>
-                {CITIES.map((c) => (
+                {(CITIES_BY_COUNTRY[firmCountry] ?? CITIES_BY_COUNTRY.UY).map((c) => (
                   <option key={c}>{c}</option>
                 ))}
               </Select>

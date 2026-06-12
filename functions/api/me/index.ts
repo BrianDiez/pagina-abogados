@@ -21,6 +21,7 @@ export const onRequestPost: Handler = async ({ request, env }) => {
       country: string;
       city: string;
       matriculaNumber: string;
+      registrations?: { jurisdictionId: string; number: string }[];
       yearsExperience: number;
       bio: string;
       specialties: string[];
@@ -42,12 +43,12 @@ export const onRequestPost: Handler = async ({ request, env }) => {
   const lawyers = await sql`
     insert into lawyers
       (user_id, slug, display_name, title, professional_type, country, city,
-       matricula_number, years_experience, bio, specialties)
+       matricula_number, registrations, years_experience, bio, specialties)
     values
       (${session.userId}, ${slug}, ${profile.displayName}, ${profile.title},
        ${profile.professionalType}, ${profile.country}, ${profile.city},
-       ${profile.matriculaNumber}, ${profile.yearsExperience}, ${profile.bio},
-       ${profile.specialties})
+       ${profile.matriculaNumber}, ${JSON.stringify(profile.registrations ?? [])}::jsonb,
+       ${profile.yearsExperience}, ${profile.bio}, ${profile.specialties})
     returning id, slug
   `;
   return json(lawyers[0], 201);

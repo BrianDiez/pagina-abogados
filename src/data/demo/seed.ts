@@ -1,4 +1,4 @@
-// Datos de demostración: profesionales ficticios de UY/AR.
+﻿// Datos de demostración: profesionales ficticios de UY/AR.
 // Los turnos se generan relativos a la fecha actual para que la agenda demo siempre tenga contenido.
 import { addDays, setHours, setMinutes, subDays } from "date-fns";
 import type {
@@ -155,10 +155,14 @@ export const seedLawyers: Lawyer[] = [
     bio: "Penalista con 18 años de trayectoria en CABA y provincia de Buenos Aires. Defensas penales, excarcelaciones, delitos económicos y querellas. Urgencias las 24 horas — la primera llamada de orientación es sin cargo.",
     photoUrl: photo("men", 71),
     yearsExperience: 18,
-    matriculaNumber: "CPACF T°89 F°412",
+    matriculaNumber: "CPACF T°89 F°412 · Fed. T°15 F°102",
+    registrations: [
+      { jurisdictionId: "ar-cpacf", number: "T°89 F°412" },
+      { jurisdictionId: "ar-federal", number: "T°15 F°102" },
+    ],
     isVerified: true,
     country: "AR",
-    city: "Buenos Aires",
+    city: "Buenos Aires (CABA)",
     languages: ["Español", "Italiano"],
     specialties: ["penal"],
     modalities: ["video", "in_person", "phone"],
@@ -184,9 +188,10 @@ export const seedLawyers: Lawyer[] = [
     photoUrl: photo("women", 26),
     yearsExperience: 7,
     matriculaNumber: "CPACF T°112 F°208",
+    registrations: [{ jurisdictionId: "ar-cpacf", number: "T°112 F°208" }],
     isVerified: true,
     country: "AR",
-    city: "Buenos Aires",
+    city: "Buenos Aires (CABA)",
     languages: ["Español", "Inglés", "Portugués"],
     specialties: ["migratorio", "internacional"],
     modalities: ["video", "async"],
@@ -211,7 +216,7 @@ export const seedLawyers: Lawyer[] = [
     matriculaNumber: "Col. Esc. CABA 5.108",
     isVerified: true,
     country: "AR",
-    city: "Buenos Aires",
+    city: "Buenos Aires (CABA)",
     languages: ["Español", "Inglés"],
     specialties: ["notarial", "inmobiliario", "sucesiones"],
     modalities: ["in_person", "video"],
@@ -555,7 +560,7 @@ export const seedFirms: Firm[] = [
     description:
       "Más de 15 años defendiendo personas y acompañando extranjeros en Argentina. Urgencias penales las 24 horas y gestión migratoria completamente online para clientes en todo el mundo.",
     logoUrl: null,
-    city: "Buenos Aires",
+    city: "Buenos Aires (CABA)",
     country: "AR",
     email: "info@pereyrafernandez.com.ar",
     phone: "+54 11 4811 2200",

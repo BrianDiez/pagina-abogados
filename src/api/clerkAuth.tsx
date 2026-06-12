@@ -66,6 +66,7 @@ function NeonAuthProvider({ children }: { children: ReactNode }) {
             country: data.country,
             city: data.city,
             matriculaNumber: data.matriculaNumber,
+            registrations: data.registrations ?? [],
             yearsExperience: data.yearsExperience,
             bio: data.bio,
             specialties: data.specialties,

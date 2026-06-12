@@ -35,7 +35,10 @@ create table lawyers (
   photo_url text,
   video_url text,
   years_experience integer check (years_experience between 0 and 70),
-  matricula_number text,
+  matricula_number text, -- string visible compuesto ("CPACF T°89 F°412 · Fed. …")
+  -- matrículas por jurisdicción [{jurisdictionId, number}] — en AR suele haber varias
+  -- (CPACF, federal, colegios provinciales); ver src/lib/jurisdictions.ts
+  registrations jsonb not null default '[]'::jsonb,
   is_verified boolean not null default false,
   verification_status text not null default 'unsubmitted'
     check (verification_status in ('unsubmitted', 'pending', 'verified', 'rejected')),

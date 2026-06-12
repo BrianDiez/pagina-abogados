@@ -15,6 +15,7 @@ export function mapLawyer(row: Row): LawyerWithPrice {
     photoUrl: (row.photo_url as string | null) ?? null,
     yearsExperience: Number(row.years_experience ?? 0),
     matriculaNumber: String(row.matricula_number ?? ""),
+    registrations: (row.registrations as Lawyer["registrations"]) ?? [],
     isVerified: Boolean(row.is_verified),
     country: (row.country as "UY" | "AR") ?? "UY",
     city: String(row.city ?? ""),

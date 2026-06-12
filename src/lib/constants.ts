@@ -24,17 +24,45 @@ export function specialtyLabel(id: string): string {
   return SPECIALTIES.find((s) => s.id === id)?.label ?? id;
 }
 
-export const CITIES = [
-  "Montevideo",
-  "Punta del Este",
-  "Salto",
-  "Paysandú",
-  "Colonia",
-  "Buenos Aires",
-  "Córdoba",
-  "Rosario",
-  "Mendoza",
-] as const;
+export const CITIES_BY_COUNTRY: Record<"UY" | "AR", readonly string[]> = {
+  UY: [
+    "Montevideo",
+    "Ciudad de la Costa",
+    "Punta del Este",
+    "Maldonado",
+    "Salto",
+    "Paysandú",
+    "Rivera",
+    "Colonia del Sacramento",
+    "Tacuarembó",
+    "Mercedes",
+    "Durazno",
+    "Las Piedras",
+  ],
+  AR: [
+    "Buenos Aires (CABA)",
+    "La Plata",
+    "Mar del Plata",
+    "San Isidro",
+    "Lomas de Zamora",
+    "Córdoba",
+    "Rosario",
+    "Santa Fe",
+    "Mendoza",
+    "San Miguel de Tucumán",
+    "Salta",
+    "Corrientes",
+    "Posadas",
+    "Resistencia",
+    "Neuquén",
+    "Paraná",
+    "Bahía Blanca",
+    "San Juan",
+  ],
+};
+
+/** Lista plana (filtros del directorio y compatibilidad). */
+export const CITIES = [...CITIES_BY_COUNTRY.UY, ...CITIES_BY_COUNTRY.AR] as const;
 
 export const MODALITY_LABELS: Record<Modality, string> = {
   video: "Videollamada",

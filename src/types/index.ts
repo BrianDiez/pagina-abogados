@@ -9,6 +9,12 @@ export type AppointmentStatus =
   | "no_show";
 export type PaymentStatus = "pending" | "paid" | "refunded" | "partial_refund" | "waived";
 
+/** Matrícula en una jurisdicción (en AR un abogado suele tener varias). */
+export interface ProfessionalRegistration {
+  jurisdictionId: string; // ver src/lib/jurisdictions.ts
+  number: string;
+}
+
 export interface LawyerStats {
   avgRating: number | null;
   reviewCount: number;
@@ -25,7 +31,10 @@ export interface Lawyer {
   bio: string;
   photoUrl: string | null;
   yearsExperience: number;
+  /** String visible compuesto ("CPACF T°89 F°412 · Fed. …"). */
   matriculaNumber: string;
+  /** Detalle por jurisdicción (fuente de verdad del string anterior). */
+  registrations?: ProfessionalRegistration[];
   isVerified: boolean;
   country: "UY" | "AR";
   city: string;

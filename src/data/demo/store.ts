@@ -37,8 +37,8 @@ interface DemoDB {
   firmInquiries: FirmInquiry[];
 }
 
-// v2: se agregó firms/firmInquiries — el bump invalida semillas viejas sin el campo
-const KEY = "legalhub-demo-db-v2";
+// v3: ciudades canónicas por país + registrations (multi-matrícula)
+const KEY = "legalhub-demo-db-v3";
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 function freshDB(): DemoDB {

@@ -6,7 +6,14 @@ import { z } from "zod";
 import { BadgeCheck, ChevronLeft } from "lucide-react";
 import { useAuth } from "@/api/auth";
 import { BACKEND } from "@/lib/backend";
-import { CITIES, SPECIALTIES } from "@/lib/constants";
+import { CITIES_BY_COUNTRY, SPECIALTIES } from "@/lib/constants";
+import {
+  defaultJurisdiction,
+  jurisdictionById,
+  jurisdictionsByCountry,
+  registrationsDisplay,
+  type ProfessionalRegistration,
+} from "@/lib/jurisdictions";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/Header";
 import { Card } from "@/components/ui/Card";
@@ -20,7 +27,8 @@ const ClerkSignUp = lazy(() =>
 
 const IS_NEON = BACKEND === "neon";
 
-// En neon la cuenta (email/contraseña) la crea Clerk: esos campos no aplican
+// En neon la cuenta (email/contraseña) la crea Clerk: esos campos no aplican.
+// La matrícula se maneja aparte (lista dinámica de jurisdicciones).
 const schema = z.object({
   name: z.string().min(3, "Ingresá tu nombre completo"),
   email: IS_NEON ? z.string().optional() : z.string().email("Email inválido"),
@@ -29,7 +37,6 @@ const schema = z.object({
   professionalType: z.enum(["lawyer", "notary", "tax_advisor", "other"]),
   country: z.enum(["UY", "AR"]),
   city: z.string().min(2, "Elegí tu ciudad"),
-  matriculaNumber: z.string().min(3, "Ingresá tu matrícula (la verificamos en 48 h)"),
   yearsExperience: z.coerce.number().min(0).max(70),
   bio: z.string().min(60, "Contá al menos 60 caracteres: es tu carta de presentación").max(800),
 });
@@ -43,6 +50,11 @@ export function RegisterLawyerPage() {
   const [step, setStep] = useState(FIRST_STEP);
   const [specialties, setSpecialties] = useState<string[]>([]);
   const [specialtiesError, setSpecialtiesError] = useState<string | null>(null);
+  // Matrículas por jurisdicción (en AR lo normal es tener más de una)
+  const [registrations, setRegistrations] = useState<ProfessionalRegistration[]>([
+    { jurisdictionId: defaultJurisdiction("UY"), number: "" },
+  ]);
+  const [registrationsError, setRegistrationsError] = useState<string | null>(null);
 
   const form = useForm<Form>({
     resolver: zodResolver(schema),
@@ -89,15 +101,44 @@ export function RegisterLawyerPage() {
     );
   }
 
+  const country = form.watch("country");
+  const cities = CITIES_BY_COUNTRY[country] ?? CITIES_BY_COUNTRY.UY;
+  const jurisdictions = jurisdictionsByCountry(country);
+
+  // Al cambiar de país: ciudades y jurisdicciones del nuevo país
+  function onCountryChange(next: "UY" | "AR") {
+    form.setValue("country", next);
+    form.setValue("city", "");
+    setRegistrations([{ jurisdictionId: defaultJurisdiction(next), number: "" }]);
+    setRegistrationsError(null);
+  }
+
+  function updateRegistration(index: number, patch: Partial<ProfessionalRegistration>) {
+    setRegistrationsError(null);
+    setRegistrations((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r)));
+  }
+
+  function validRegistrations(): ProfessionalRegistration[] {
+    return registrations.filter((r) => r.number.trim().length >= 2);
+  }
+
   async function submit(data: Form) {
     if (specialties.length === 0) {
       setSpecialtiesError("Elegí al menos una especialidad");
       setStep(1);
       return;
     }
+    const regs = validRegistrations();
+    if (regs.length === 0) {
+      setRegistrationsError("Cargá al menos una matrícula (la verificamos en 48 h)");
+      setStep(1);
+      return;
+    }
     await registerLawyer({
       ...data,
       email: data.email ?? user?.email ?? "",
+      matriculaNumber: registrationsDisplay(regs),
+      registrations: regs,
       specialties,
     });
     navigate("/dashboard");
@@ -105,14 +146,20 @@ export function RegisterLawyerPage() {
 
   const stepFields: Record<number, (keyof Form)[]> = {
     0: ["name", "email", "password", "title", "professionalType"],
-    1: ["country", "city", "matriculaNumber", "yearsExperience"],
+    1: ["country", "city", "yearsExperience"],
   };
 
   async function next() {
     const valid = await form.trigger(stepFields[step]);
-    if (step === 1 && specialties.length === 0) {
-      setSpecialtiesError("Elegí al menos una especialidad");
-      return;
+    if (step === 1) {
+      if (validRegistrations().length === 0) {
+        setRegistrationsError("Cargá al menos una matrícula (la verificamos en 48 h)");
+        return;
+      }
+      if (specialties.length === 0) {
+        setSpecialtiesError("Elegí al menos una especialidad");
+        return;
+      }
     }
     if (valid) setStep((s) => s + 1);
   }
@@ -179,7 +226,10 @@ export function RegisterLawyerPage() {
               <>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <FieldLabel label="País" required>
-                    <Select {...form.register("country")}>
+                    <Select
+                      value={country}
+                      onChange={(e) => onCountryChange(e.target.value as "UY" | "AR")}
+                    >
                       <option value="UY">Uruguay</option>
                       <option value="AR">Argentina</option>
                     </Select>
@@ -187,25 +237,80 @@ export function RegisterLawyerPage() {
                   <FieldLabel label="Ciudad" required error={form.formState.errors.city?.message}>
                     <Select {...form.register("city")}>
                       <option value="">Elegir…</option>
-                      {CITIES.map((c) => (
+                      {cities.map((c) => (
                         <option key={c}>{c}</option>
                       ))}
                     </Select>
                   </FieldLabel>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <FieldLabel
-                    label="Matrícula / inscripción colegial"
-                    required
-                    error={form.formState.errors.matriculaNumber?.message}
-                    hint="Ej.: CAU 18.245 · CPACF T°89 F°412"
-                  >
-                    <Input placeholder="CAU 18.245" {...form.register("matriculaNumber")} />
-                  </FieldLabel>
-                  <FieldLabel label="Años de experiencia" required>
-                    <Input type="number" min={0} max={70} {...form.register("yearsExperience")} />
-                  </FieldLabel>
-                </div>
+
+                {/* Matrículas por jurisdicción: en AR (CPACF, federal, provincias)
+                    lo normal es tener más de una */}
+                <FieldLabel
+                  label="Matrículas (una por jurisdicción)"
+                  required
+                  error={registrationsError ?? undefined}
+                  hint={
+                    country === "AR"
+                      ? "CABA (CPACF), federal y cada provincia llevan matrícula propia: agregá todas las que tengas."
+                      : "En Uruguay alcanza con la inscripción de tu título ante la SCJ. CAU/AEU son opcionales."
+                  }
+                >
+                  <div className="space-y-2 pt-1">
+                    {registrations.map((r, index) => {
+                      const j = jurisdictionById(r.jurisdictionId);
+                      return (
+                        <div key={index} className="flex items-start gap-2">
+                          <Select
+                            value={r.jurisdictionId}
+                            onChange={(e) => updateRegistration(index, { jurisdictionId: e.target.value })}
+                            className="flex-1"
+                          >
+                            {jurisdictions.map((opt) => (
+                              <option key={opt.id} value={opt.id}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </Select>
+                          <Input
+                            value={r.number}
+                            onChange={(e) => updateRegistration(index, { number: e.target.value })}
+                            placeholder={j?.hint ?? "N°"}
+                            className="w-40"
+                          />
+                          {registrations.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setRegistrations((prev) => prev.filter((_, i) => i !== index))}
+                              className="mt-2.5 text-navy-300 hover:text-danger cursor-pointer"
+                              aria-label="Quitar matrícula"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {registrations.length < 5 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setRegistrations((prev) => [
+                            ...prev,
+                            { jurisdictionId: defaultJurisdiction(country), number: "" },
+                          ])
+                        }
+                      >
+                        + Agregar otra matrícula
+                      </Button>
+                    )}
+                  </div>
+                </FieldLabel>
+
+                <FieldLabel label="Años de experiencia" required>
+                  <Input type="number" min={0} max={70} {...form.register("yearsExperience")} />
+                </FieldLabel>
                 <FieldLabel
                   label="Especialidades (hasta 5)"
                   required
