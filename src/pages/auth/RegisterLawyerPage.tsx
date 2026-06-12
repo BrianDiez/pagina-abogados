@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,7 @@ import {
   jurisdictionById,
   jurisdictionsByCountry,
   registrationsDisplay,
+  suggestedJurisdictionIds,
   type ProfessionalRegistration,
 } from "@/lib/jurisdictions";
 import { cn } from "@/lib/utils";
@@ -102,8 +103,27 @@ export function RegisterLawyerPage() {
   }
 
   const country = form.watch("country");
+  const city = form.watch("city");
   const cities = CITIES_BY_COUNTRY[country] ?? CITIES_BY_COUNTRY.UY;
   const jurisdictions = jurisdictionsByCountry(country);
+
+  // Sugerencias arriba (colegio local + Federal + CPACF), todo lo demás abajo.
+  // Sugerir, no filtrar: las matrículas no coinciden con la ciudad.
+  const suggestedIds = suggestedJurisdictionIds(country, city || undefined);
+  const suggested = suggestedIds
+    .map(jurisdictionById)
+    .filter((j): j is NonNullable<typeof j> => !!j);
+  const otherJurisdictions = jurisdictions.filter((j) => !suggestedIds.includes(j.id));
+
+  // Al elegir ciudad, la primera fila vacía adopta la jurisdicción local
+  useEffect(() => {
+    if (!city) return;
+    setRegistrations((prev) =>
+      prev.length > 0 && prev[0]!.number.trim() === ""
+        ? [{ ...prev[0]!, jurisdictionId: defaultJurisdiction(country, city) }, ...prev.slice(1)]
+        : prev,
+    );
+  }, [city, country]);
 
   // Al cambiar de país: ciudades y jurisdicciones del nuevo país
   function onCountryChange(next: "UY" | "AR") {
@@ -266,11 +286,22 @@ export function RegisterLawyerPage() {
                             onChange={(e) => updateRegistration(index, { jurisdictionId: e.target.value })}
                             className="flex-1"
                           >
-                            {jurisdictions.map((opt) => (
-                              <option key={opt.id} value={opt.id}>
-                                {opt.label}
-                              </option>
-                            ))}
+                            <optgroup label={city ? `Sugeridas para ${city}` : "Más comunes"}>
+                              {suggested.map((opt) => (
+                                <option key={opt.id} value={opt.id}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </optgroup>
+                            {otherJurisdictions.length > 0 && (
+                              <optgroup label="Todas las jurisdicciones">
+                                {otherJurisdictions.map((opt) => (
+                                  <option key={opt.id} value={opt.id}>
+                                    {opt.label}
+                                  </option>
+                                ))}
+                              </optgroup>
+                            )}
                           </Select>
                           <Input
                             value={r.number}
@@ -296,10 +327,15 @@ export function RegisterLawyerPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() =>
-                          setRegistrations((prev) => [
-                            ...prev,
-                            { jurisdictionId: defaultJurisdiction(country), number: "" },
-                          ])
+                          setRegistrations((prev) => {
+                            // proponer la siguiente del combo típico que aún no esté usada
+                            // (local -> Federal -> CPACF)
+                            const used = new Set(prev.map((r) => r.jurisdictionId));
+                            const nextId =
+                              suggestedIds.find((id) => !used.has(id)) ??
+                              defaultJurisdiction(country, city || undefined);
+                            return [...prev, { jurisdictionId: nextId, number: "" }];
+                          })
                         }
                       >
                         + Agregar otra matrícula

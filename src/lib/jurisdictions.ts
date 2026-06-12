@@ -118,6 +118,40 @@ export function jurisdictionsByCountry(country: "UY" | "AR"): Jurisdiction[] {
   return JURISDICTIONS.filter((j) => j.country === country);
 }
 
+// Ciudad → jurisdicción local más probable. OJO: es para SUGERIR (ordenar
+// arriba), nunca para filtrar — las matrículas no coinciden con la ciudad
+// (un rosarino suele tener Santa Fe + Federal; un porteño, CPACF + PBA).
+const CITY_LOCAL_JURISDICTION: Record<string, string> = {
+  "Buenos Aires (CABA)": "ar-cpacf",
+  "La Plata": "ar-pba",
+  "Mar del Plata": "ar-pba",
+  "San Isidro": "ar-pba",
+  "Lomas de Zamora": "ar-pba",
+  "Bahía Blanca": "ar-pba",
+  "Córdoba": "ar-cordoba",
+  "Rosario": "ar-santa-fe",
+  "Santa Fe": "ar-santa-fe",
+  "Mendoza": "ar-mendoza",
+  "San Miguel de Tucumán": "ar-tucuman",
+  "Salta": "ar-salta",
+  "Corrientes": "ar-corrientes",
+  "Posadas": "ar-misiones",
+  "Resistencia": "ar-chaco",
+  "Neuquén": "ar-neuquen",
+  "Paraná": "ar-entre-rios",
+  "San Juan": "ar-san-juan",
+};
+
+/** IDs sugeridos (ordenados) para un país+ciudad: colegio local primero,
+ *  después Federal y CPACF — el combo típico del litigante. */
+export function suggestedJurisdictionIds(country: "UY" | "AR", city?: string): string[] {
+  if (country === "UY") return ["uy-scj", "uy-cau", "uy-aeu"];
+  const local = city ? CITY_LOCAL_JURISDICTION[city] : undefined;
+  const base = ["ar-federal", "ar-cpacf"];
+  if (!local) return ["ar-cpacf", "ar-federal", "ar-pba"];
+  return [local, ...base.filter((id) => id !== local)];
+}
+
 export function jurisdictionById(id: string): Jurisdiction | undefined {
   return JURISDICTIONS.find((j) => j.id === id);
 }
@@ -132,6 +166,6 @@ export function registrationsDisplay(regs: ProfessionalRegistration[]): string {
     .join(" · ");
 }
 
-export function defaultJurisdiction(country: "UY" | "AR"): string {
-  return country === "UY" ? "uy-scj" : "ar-cpacf";
+export function defaultJurisdiction(country: "UY" | "AR", city?: string): string {
+  return suggestedJurisdictionIds(country, city)[0]!;
 }
