@@ -19,6 +19,11 @@ export const onRequestGet: Handler = async ({ env }) => {
     R2_SECRET_ACCESS_KEY_presente: !!env.R2_SECRET_ACCESS_KEY,
     R2_BUCKET_presente: !!env.R2_BUCKET,
     R2_PUBLIC_URL_presente: !!env.R2_PUBLIC_URL,
+    // Nombres exactos que ve el runtime (entre comillas para detectar espacios).
+    // Solo nombres: los valores jamás se exponen.
+    variables_detectadas: Object.keys(env as object)
+      .filter((k) => !k.startsWith("CF_") && k !== "ASSETS")
+      .map((k) => `"${k}"`),
   };
 
   try {
