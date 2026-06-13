@@ -1,14 +1,13 @@
-import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "@/api/auth";
 import { BACKEND } from "@/lib/backend";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-
-// Clerk solo se descarga cuando el backend es neon (en demo no pesa ni un byte)
-const ClerkRoot = lazy(() =>
-  import("@/api/clerkAuth").then((m) => ({ default: m.ClerkRoot })),
-);
+// Import estático (no lazy): Cloudflare Pages sirve los chunks dinámicos con
+// MIME text/html, lo que rompe el import() de módulos ES. En el bundle
+// principal el MIME es correcto. En modo demo este código se incluye pero
+// ClerkProvider nunca se renderiza.
+import { ClerkRoot } from "@/api/clerkAuth";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { LandingPage } from "@/pages/LandingPage";
@@ -43,11 +42,7 @@ const queryClient = new QueryClient({
 // demo: AuthProvider local · neon: ClerkRoot (provee el mismo AuthContext)
 function AuthBoundary({ children }: { children: React.ReactNode }) {
   if (BACKEND !== "neon") return <AuthProvider>{children}</AuthProvider>;
-  return (
-    <Suspense fallback={null}>
-      <ClerkRoot>{children}</ClerkRoot>
-    </Suspense>
-  );
+  return <ClerkRoot>{children}</ClerkRoot>;
 }
 
 export default function App() {

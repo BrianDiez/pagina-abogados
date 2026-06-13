@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,10 +21,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FieldLabel, Input, Select, Textarea } from "@/components/ui/Field";
 import { FullPageLoader } from "@/components/ui/misc";
-
-const ClerkSignUp = lazy(() =>
-  import("@/api/clerkAuth").then((m) => ({ default: m.ClerkSignUp })),
-);
+import { ClerkSignUp } from "@/api/clerkAuth";
 
 const IS_NEON = BACKEND === "neon";
 
@@ -84,9 +81,7 @@ export function RegisterLawyerPage() {
             <strong className="text-navy-800">Paso 1 de 2:</strong> creá tu cuenta. Después
             completás tu perfil profesional (2 minutos).
           </p>
-          <Suspense fallback={<div className="h-96 w-full animate-pulse rounded-2xl bg-navy-100/50" />}>
-            <ClerkSignUp signInUrl="/login" forceRedirectUrl="/registro/profesional" />
-          </Suspense>
+          <ClerkSignUp signInUrl="/login" forceRedirectUrl="/registro/profesional" />
         </div>
       </div>
     );

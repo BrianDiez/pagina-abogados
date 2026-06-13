@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,10 +11,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FieldLabel, Input } from "@/components/ui/Field";
 import { FullPageLoader } from "@/components/ui/misc";
-
-const ClerkSignIn = lazy(() =>
-  import("@/api/clerkAuth").then((m) => ({ default: m.ClerkSignIn })),
-);
+import { ClerkSignIn } from "@/api/clerkAuth";
 
 const schema = z.object({
   email: z.string().email("Email inválido"),
@@ -38,9 +35,7 @@ export function LoginPage() {
       <div className="min-h-screen">
         <Header />
         <div className="mx-auto flex max-w-md flex-col items-center px-4 py-16 sm:px-6">
-          <Suspense fallback={<div className="h-96 w-full animate-pulse rounded-2xl bg-navy-100/50" />}>
-            <ClerkSignIn signUpUrl="/registro" forceRedirectUrl="/dashboard" />
-          </Suspense>
+          <ClerkSignIn signUpUrl="/registro" forceRedirectUrl="/dashboard" />
           <p className="mt-6 text-center text-sm text-navy-500">
             ¿Sos profesional y todavía no tenés perfil?{" "}
             <Link to="/registro/profesional" className="font-medium text-navy-800 underline">
