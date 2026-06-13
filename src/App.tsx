@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "@/api/auth";
 import { BACKEND } from "@/lib/backend";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Clerk solo se descarga cuando el backend es neon (en demo no pesa ni un byte)
 const ClerkRoot = lazy(() =>
@@ -51,6 +52,7 @@ function AuthBoundary({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <AuthBoundary>
         <BrowserRouter>
@@ -85,5 +87,6 @@ export default function App() {
         </BrowserRouter>
       </AuthBoundary>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
