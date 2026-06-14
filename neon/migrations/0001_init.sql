@@ -43,6 +43,7 @@ create table lawyers (
   verification_status text not null default 'unsubmitted'
     check (verification_status in ('unsubmitted', 'pending', 'verified', 'rejected')),
   country text not null default 'UY',
+  province text, -- departamento (UY) o provincia (AR)
   city text,
   phone text,
   whatsapp text,

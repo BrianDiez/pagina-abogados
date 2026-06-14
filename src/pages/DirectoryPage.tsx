@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, UsersRound } from "lucide-react";
 import { listLawyers } from "@/api/lawyers";
 import { usePageMeta } from "@/lib/seo";
-import { CITIES_BY_COUNTRY, MODALITY_LABELS, SPECIALTIES, specialtyLabel } from "@/lib/constants";
+import { MODALITY_LABELS, SPECIALTIES, specialtyLabel } from "@/lib/constants";
+import { regionsOf } from "@/lib/geography";
 import type { DirectoryFilters, Modality } from "@/types";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -19,7 +20,7 @@ export function DirectoryPage({ notariesOnly = false }: { notariesOnly?: boolean
     () => ({
       query: params.get("q") ?? undefined,
       specialty: params.get("especialidad") ?? undefined,
-      city: params.get("ciudad") ?? undefined,
+      province: params.get("provincia") ?? undefined,
       modality: (params.get("modalidad") as Modality) ?? undefined,
       professionalType: notariesOnly ? "notary" : undefined,
       sort: (params.get("orden") as DirectoryFilters["sort"]) ?? "rating",
@@ -35,7 +36,7 @@ export function DirectoryPage({ notariesOnly = false }: { notariesOnly?: boolean
   const seoSegment = notariesOnly ? "Escribanos y notarios" : "Abogados";
   const seoQualifier = [
     filters.specialty ? `de ${specialtyLabel(filters.specialty)}` : "",
-    filters.city ? `en ${filters.city}` : "en Uruguay y Argentina",
+    filters.province ? `en ${filters.province}` : "en Uruguay y Argentina",
   ]
     .filter(Boolean)
     .join(" ");
@@ -81,19 +82,19 @@ export function DirectoryPage({ notariesOnly = false }: { notariesOnly?: boolean
                 onChange={(e) => setParam("q", e.target.value)}
               />
             </div>
-            <Select value={filters.city ?? ""} onChange={(e) => setParam("ciudad", e.target.value)}>
-              <option value="">Todas las ciudades</option>
-              <optgroup label="🇺🇾 Uruguay">
-                {CITIES_BY_COUNTRY.UY.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+            <Select value={filters.province ?? ""} onChange={(e) => setParam("provincia", e.target.value)}>
+              <option value="">Todo el país</option>
+              <optgroup label="🇺🇾 Uruguay (departamento)">
+                {regionsOf("UY").map((r) => (
+                  <option key={r.name} value={r.name}>
+                    {r.name}
                   </option>
                 ))}
               </optgroup>
-              <optgroup label="🇦🇷 Argentina">
-                {CITIES_BY_COUNTRY.AR.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+              <optgroup label="🇦🇷 Argentina (provincia)">
+                {regionsOf("AR").map((r) => (
+                  <option key={r.name} value={r.name}>
+                    {r.name}
                   </option>
                 ))}
               </optgroup>

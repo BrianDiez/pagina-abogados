@@ -24,7 +24,8 @@ export interface RegisterLawyerInput {
   email: string;
   title: string;
   professionalType: Lawyer["professionalType"];
-  city: string;
+  province?: string;
+  city?: string;
   country: "UY" | "AR";
   /** string visible compuesto (derivado de registrations) */
   matriculaNumber: string;
@@ -136,7 +137,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         registrations: data.registrations ?? [],
         isVerified: false,
         country: data.country,
-        city: data.city,
+        province: data.province,
+        city: data.city ?? "",
         languages: ["Español"],
         specialties: data.specialties,
         modalities: ["video"],

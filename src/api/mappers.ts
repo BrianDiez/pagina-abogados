@@ -18,6 +18,7 @@ export function mapLawyer(row: Row): LawyerWithPrice {
     registrations: (row.registrations as Lawyer["registrations"]) ?? [],
     isVerified: Boolean(row.is_verified),
     country: (row.country as "UY" | "AR") ?? "UY",
+    province: (row.province as string) ?? undefined,
     city: String(row.city ?? ""),
     languages: (row.languages as string[]) ?? [],
     specialties: (row.specialties as string[]) ?? [],

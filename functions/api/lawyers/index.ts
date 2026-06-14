@@ -4,7 +4,7 @@ import { getSql, json, error, type Handler } from "../../../server/db";
 export const onRequestGet: Handler = async ({ request, env }) => {
   const url = new URL(request.url);
   const especialidad = url.searchParams.get("especialidad");
-  const ciudad = url.searchParams.get("ciudad");
+  const provincia = url.searchParams.get("provincia");
   const modalidad = url.searchParams.get("modalidad");
   const tipo = url.searchParams.get("tipo");
   const q = url.searchParams.get("q");
@@ -24,7 +24,7 @@ export const onRequestGet: Handler = async ({ request, env }) => {
     join lawyer_stats s on s.lawyer_id = l.id
     where l.is_active
       and (${especialidad}::text is null or ${especialidad} = any(l.specialties))
-      and (${ciudad}::text is null or l.city = ${ciudad})
+      and (${provincia}::text is null or l.province = ${provincia})
       and (${modalidad}::text is null or ${modalidad} = any(l.modalities))
       and (${tipo}::text is null or l.professional_type = ${tipo})
       and (${q}::text is null

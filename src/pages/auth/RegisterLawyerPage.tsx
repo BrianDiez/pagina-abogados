@@ -6,7 +6,8 @@ import { z } from "zod";
 import { BadgeCheck, ChevronLeft } from "lucide-react";
 import { useAuth } from "@/api/auth";
 import { BACKEND } from "@/lib/backend";
-import { CITIES_BY_COUNTRY, SPECIALTIES } from "@/lib/constants";
+import { SPECIALTIES } from "@/lib/constants";
+import { citiesOf, regionByName, regionLabel, regionsOf } from "@/lib/geography";
 import {
   defaultJurisdiction,
   jurisdictionById,
@@ -34,7 +35,8 @@ const schema = z.object({
   title: z.string(),
   professionalType: z.enum(["lawyer", "notary", "tax_advisor", "other"]),
   country: z.enum(["UY", "AR"]),
-  city: z.string().min(2, "Elegí tu ciudad"),
+  province: z.string().min(2, "Elegí tu departamento/provincia"),
+  city: z.string().optional(), // opcional: filtrada por departamento/provincia
   yearsExperience: z.coerce.number().min(0).max(70),
   bio: z.string().min(60, "Contá al menos 60 caracteres: es tu carta de presentación").max(800),
 });
@@ -98,34 +100,44 @@ export function RegisterLawyerPage() {
   }
 
   const country = form.watch("country");
-  const city = form.watch("city");
-  const cities = CITIES_BY_COUNTRY[country] ?? CITIES_BY_COUNTRY.UY;
+  const province = form.watch("province");
+  const regions = regionsOf(country);
+  const cities = province ? citiesOf(country, province) : [];
   const jurisdictions = jurisdictionsByCountry(country);
 
+  // Jurisdicción local: la del departamento/provincia elegido
+  const localJurisdiction = province ? regionByName(country, province)?.jurisdiction : undefined;
+
   // Sugerencias arriba (colegio local + Federal + CPACF), todo lo demás abajo.
-  // Sugerir, no filtrar: las matrículas no coinciden con la ciudad.
-  const suggestedIds = suggestedJurisdictionIds(country, city || undefined);
+  // Sugerir, no filtrar: un abogado puede tener matrículas de otras jurisdicciones.
+  const suggestedIds = suggestedJurisdictionIds(country, localJurisdiction);
   const suggested = suggestedIds
     .map(jurisdictionById)
     .filter((j): j is NonNullable<typeof j> => !!j);
   const otherJurisdictions = jurisdictions.filter((j) => !suggestedIds.includes(j.id));
 
-  // Al elegir ciudad, la primera fila vacía adopta la jurisdicción local
+  // Al elegir provincia/departamento, la primera fila vacía adopta su colegio local
   useEffect(() => {
-    if (!city) return;
     setRegistrations((prev) =>
       prev.length > 0 && prev[0]!.number.trim() === ""
-        ? [{ ...prev[0]!, jurisdictionId: defaultJurisdiction(country, city) }, ...prev.slice(1)]
+        ? [{ ...prev[0]!, jurisdictionId: defaultJurisdiction(country, localJurisdiction) }, ...prev.slice(1)]
         : prev,
     );
-  }, [city, country]);
+  }, [localJurisdiction, country]);
 
-  // Al cambiar de país: ciudades y jurisdicciones del nuevo país
+  // Al cambiar de país: limpiar región/ciudad y resetear jurisdicciones
   function onCountryChange(next: "UY" | "AR") {
     form.setValue("country", next);
+    form.setValue("province", "");
     form.setValue("city", "");
     setRegistrations([{ jurisdictionId: defaultJurisdiction(next), number: "" }]);
     setRegistrationsError(null);
+  }
+
+  // Al cambiar de provincia/departamento: limpiar la ciudad (se re-filtra)
+  function onProvinceChange(next: string) {
+    form.setValue("province", next);
+    form.setValue("city", "");
   }
 
   function updateRegistration(index: number, patch: Partial<ProfessionalRegistration>) {
@@ -161,7 +173,7 @@ export function RegisterLawyerPage() {
 
   const stepFields: Record<number, (keyof Form)[]> = {
     0: ["name", "email", "password", "title", "professionalType"],
-    1: ["country", "city", "yearsExperience"],
+    1: ["country", "province", "yearsExperience"],
   };
 
   async function next() {
@@ -239,19 +251,33 @@ export function RegisterLawyerPage() {
 
             {step === 1 && (
               <>
+                <FieldLabel label="País" required>
+                  <Select
+                    value={country}
+                    onChange={(e) => onCountryChange(e.target.value as "UY" | "AR")}
+                  >
+                    <option value="UY">Uruguay</option>
+                    <option value="AR">Argentina</option>
+                  </Select>
+                </FieldLabel>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <FieldLabel label="País" required>
-                    <Select
-                      value={country}
-                      onChange={(e) => onCountryChange(e.target.value as "UY" | "AR")}
-                    >
-                      <option value="UY">Uruguay</option>
-                      <option value="AR">Argentina</option>
+                  <FieldLabel
+                    label={regionLabel(country)}
+                    required
+                    error={form.formState.errors.province?.message}
+                  >
+                    <Select value={province ?? ""} onChange={(e) => onProvinceChange(e.target.value)}>
+                      <option value="">Elegir…</option>
+                      {regions.map((r) => (
+                        <option key={r.name} value={r.name}>
+                          {r.name}
+                        </option>
+                      ))}
                     </Select>
                   </FieldLabel>
-                  <FieldLabel label="Ciudad" required error={form.formState.errors.city?.message}>
-                    <Select {...form.register("city")}>
-                      <option value="">Elegir…</option>
+                  <FieldLabel label="Ciudad / localidad" hint="Opcional">
+                    <Select {...form.register("city")} disabled={!province}>
+                      <option value="">{province ? "Elegir…" : "Elegí primero el departamento/provincia"}</option>
                       {cities.map((c) => (
                         <option key={c}>{c}</option>
                       ))}
@@ -281,7 +307,7 @@ export function RegisterLawyerPage() {
                             onChange={(e) => updateRegistration(index, { jurisdictionId: e.target.value })}
                             className="flex-1"
                           >
-                            <optgroup label={city ? `Sugeridas para ${city}` : "Más comunes"}>
+                            <optgroup label={province ? `Sugeridas para ${province}` : "Más comunes"}>
                               {suggested.map((opt) => (
                                 <option key={opt.id} value={opt.id}>
                                   {opt.label}
@@ -328,7 +354,7 @@ export function RegisterLawyerPage() {
                             const used = new Set(prev.map((r) => r.jurisdictionId));
                             const nextId =
                               suggestedIds.find((id) => !used.has(id)) ??
-                              defaultJurisdiction(country, city || undefined);
+                              defaultJurisdiction(country, localJurisdiction);
                             return [...prev, { jurisdictionId: nextId, number: "" }];
                           })
                         }

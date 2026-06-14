@@ -37,6 +37,8 @@ export interface Lawyer {
   registrations?: ProfessionalRegistration[];
   isVerified: boolean;
   country: "UY" | "AR";
+  /** departamento (UY) o provincia (AR) */
+  province?: string;
   city: string;
   languages: string[];
   specialties: string[]; // ids de SPECIALTIES
@@ -142,6 +144,8 @@ export interface Slot {
 export interface DirectoryFilters {
   query?: string;
   specialty?: string;
+  /** departamento (UY) o provincia (AR) */
+  province?: string;
   city?: string;
   modality?: Modality;
   professionalType?: ProfessionalType;

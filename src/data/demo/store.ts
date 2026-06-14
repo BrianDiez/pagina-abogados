@@ -12,6 +12,7 @@ import type {
   TimeBlock,
   WeeklyAvailability,
 } from "@/types";
+import { provinceOfCity } from "@/lib/geography";
 import {
   seedAppointments,
   seedAvailability,
@@ -23,6 +24,15 @@ import {
   seedServices,
   seedTimeBlocks,
 } from "./seed";
+
+// Deriva la región (departamento/provincia) desde la ciudad de cada seed,
+// así el directorio demo filtra por provincia sin duplicar el dato en la semilla.
+function withProvince(lawyers: Lawyer[]): Lawyer[] {
+  return lawyers.map((l) => ({
+    ...l,
+    province: l.province ?? provinceOfCity(l.country, l.city),
+  }));
+}
 
 interface DemoDB {
   seededAt: number;
@@ -37,14 +47,14 @@ interface DemoDB {
   firmInquiries: FirmInquiry[];
 }
 
-// v3: ciudades canónicas por país + registrations (multi-matrícula)
-const KEY = "legalhub-demo-db-v3";
+// v4: departamento/provincia (geografía de dos niveles)
+const KEY = "legalhub-demo-db-v4";
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 function freshDB(): DemoDB {
   return {
     seededAt: Date.now(),
-    lawyers: structuredClone(seedLawyers),
+    lawyers: withProvince(structuredClone(seedLawyers)),
     services: structuredClone(seedServices),
     availability: structuredClone(seedAvailability),
     timeBlocks: structuredClone(seedTimeBlocks),

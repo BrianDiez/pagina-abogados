@@ -52,7 +52,7 @@ export async function listLawyers(filters: DirectoryFilters = {}): Promise<Lawye
   if (!DEMO_MODE) {
     const params = new URLSearchParams();
     if (filters.specialty) params.set("especialidad", filters.specialty);
-    if (filters.city) params.set("ciudad", filters.city);
+    if (filters.province) params.set("provincia", filters.province);
     if (filters.modality) params.set("modalidad", filters.modality);
     if (filters.professionalType) params.set("tipo", filters.professionalType);
     if (filters.query) params.set("q", filters.query);
@@ -82,18 +82,19 @@ export async function listLawyers(filters: DirectoryFilters = {}): Promise<Lawye
     availableToday: hasAvailabilityToday(l.id) && l.acceptsNewClients,
   }));
 
-  const { query, specialty, city, modality, professionalType, sort } = filters;
+  const { query, specialty, province, modality, professionalType, sort } = filters;
   if (query) {
     const q = query.toLowerCase();
     result = result.filter(
       (l) =>
         l.displayName.toLowerCase().includes(q) ||
         l.bio.toLowerCase().includes(q) ||
-        l.city.toLowerCase().includes(q),
+        l.city.toLowerCase().includes(q) ||
+        (l.province ?? "").toLowerCase().includes(q),
     );
   }
   if (specialty) result = result.filter((l) => l.specialties.includes(specialty));
-  if (city) result = result.filter((l) => l.city === city);
+  if (province) result = result.filter((l) => l.province === province);
   if (modality) result = result.filter((l) => l.modalities.includes(modality));
   if (professionalType) result = result.filter((l) => l.professionalType === professionalType);
 
