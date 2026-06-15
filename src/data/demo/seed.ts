@@ -32,6 +32,7 @@ export const seedLawyers: Lawyer[] = [
     city: "Montevideo",
     languages: ["Español", "Inglés"],
     specialties: ["familia", "sucesiones", "civil"],
+    topics: ["Divorcio", "Pensión alimenticia", "Tenencia y guarda", "Sucesiones y herencias"],
     modalities: ["video", "in_person"],
     highlights: [
       "Doctora en Derecho — UdelaR",

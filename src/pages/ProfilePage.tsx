@@ -227,6 +227,18 @@ export function ProfilePage() {
                 ))}
               </ul>
             )}
+            {lawyer.topics && lawyer.topics.length > 0 && (
+              <div className="mt-4">
+                <p className="mb-2 text-sm font-semibold text-navy-700">Temas que trabajo</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {lawyer.topics.map((t) => (
+                    <Badge key={t} tone="neutral">
+                      {t}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Servicios */}

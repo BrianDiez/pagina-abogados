@@ -71,6 +71,8 @@ function NeonAuthProvider({ children }: { children: ReactNode }) {
             yearsExperience: data.yearsExperience,
             bio: data.bio,
             specialties: data.specialties,
+            topics: data.topics ?? [],
+            highlights: data.highlights ?? [],
           },
         }),
       });

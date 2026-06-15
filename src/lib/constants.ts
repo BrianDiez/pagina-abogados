@@ -1,27 +1,164 @@
 import type { Modality, Plan } from "@/types";
 
-export const SPECIALTIES = [
-  { id: "civil", label: "Derecho Civil" },
-  { id: "penal", label: "Derecho Penal" },
-  { id: "familia", label: "Familia y Divorcio" },
-  { id: "laboral", label: "Derecho Laboral" },
-  { id: "comercial", label: "Comercial / Societario" },
-  { id: "inmobiliario", label: "Derecho Inmobiliario" },
-  { id: "sucesiones", label: "Sucesiones y Herencias" },
-  { id: "migratorio", label: "Derecho Migratorio" },
-  { id: "tributario", label: "Tributario / Impositivo" },
-  { id: "consumidor", label: "Derecho del Consumidor" },
-  { id: "internacional", label: "Internacional Privado" },
-  { id: "marcas", label: "Propiedad Intelectual / Marcas" },
-  { id: "deportivo", label: "Derecho Deportivo" },
-  { id: "notarial", label: "Escribanía / Notariado" },
-  { id: "contratos", label: "Contratos y Documentos" },
-  { id: "pymes", label: "Asesoría de Empresas" },
-  { id: "cripto", label: "Cripto y Activos Digitales" },
-] as const;
+// Taxonomía de dos niveles: RAMA del derecho (nivel 1) → TEMAS (nivel 2).
+// Validado con feedback profesional: "Divorcio" es un tema dentro de Familia,
+// "inmobiliario" no es una rama (es un tema de Civil), etc. La rama es lo que
+// el cliente busca; los temas afinan. Un profesional elige rama(s) y, opcional,
+// temas dentro de ellas.
+export interface LegalArea {
+  id: string;
+  label: string;
+  topics: string[];
+}
+
+export const LEGAL_AREAS: LegalArea[] = [
+  {
+    id: "civil",
+    label: "Derecho Civil",
+    topics: [
+      "Contratos y obligaciones",
+      "Daños y perjuicios / Responsabilidad civil",
+      "Arrendamientos / Alquileres",
+      "Propiedad y derechos reales",
+      "Compraventa de inmuebles",
+      "Desalojos",
+      "Cobro de pesos",
+      "Prescripción adquisitiva (usucapión)",
+    ],
+  },
+  {
+    id: "familia",
+    label: "Derecho de Familia",
+    topics: [
+      "Divorcio",
+      "Pensión alimenticia",
+      "Tenencia y guarda",
+      "Régimen de visitas",
+      "Filiación y reconocimiento",
+      "Adopción",
+      "Violencia doméstica",
+      "Unión concubinaria",
+      "Curatela e interdicción",
+    ],
+  },
+  {
+    id: "sucesorio",
+    label: "Derecho Sucesorio",
+    topics: ["Sucesiones y herencias", "Testamentos", "Partición de bienes", "Declaratoria de herederos"],
+  },
+  {
+    id: "penal",
+    label: "Derecho Penal",
+    topics: [
+      "Defensa penal",
+      "Querellas",
+      "Excarcelaciones y libertades",
+      "Delitos económicos",
+      "Estupefacientes",
+      "Violencia y lesiones",
+      "Penal juvenil (adolescentes)",
+      "Delitos informáticos",
+    ],
+  },
+  {
+    id: "laboral",
+    label: "Derecho Laboral",
+    topics: [
+      "Despidos",
+      "Accidentes de trabajo",
+      "Acoso laboral",
+      "Reclamos salariales",
+      "Trabajo no registrado",
+      "Seguridad social y jubilaciones",
+    ],
+  },
+  {
+    id: "comercial",
+    label: "Derecho Comercial y Societario",
+    topics: [
+      "Constitución de sociedades",
+      "Contratos comerciales",
+      "Concursos y quiebras",
+      "Asesoría de empresas y pymes",
+      "Startups y tecnología",
+      "Criptomonedas y activos digitales",
+    ],
+  },
+  {
+    id: "administrativo",
+    label: "Contencioso Administrativo",
+    topics: ["Recursos contra el Estado", "Empleo público", "Expropiaciones", "Responsabilidad del Estado"],
+  },
+  {
+    id: "tributario",
+    label: "Derecho Tributario",
+    topics: ["Impuestos (DGI / AFIP)", "Defensa ante el fisco", "Planificación fiscal"],
+  },
+  {
+    id: "consumidor",
+    label: "Derecho del Consumidor",
+    topics: ["Reclamos de consumo", "Defensa del consumidor", "Sobreendeudamiento"],
+  },
+  {
+    id: "migratorio",
+    label: "Derecho Migratorio",
+    topics: ["Residencias y radicaciones", "Ciudadanía", "Visados de trabajo e inversión"],
+  },
+  {
+    id: "internacional",
+    label: "Derecho Internacional",
+    topics: ["Internacional privado", "Contratos internacionales", "Restitución internacional de menores"],
+  },
+  {
+    id: "intelectual",
+    label: "Propiedad Intelectual",
+    topics: ["Marcas", "Patentes", "Derechos de autor", "Nombres de dominio"],
+  },
+  {
+    id: "notarial",
+    label: "Escribanía / Notariado",
+    topics: ["Compraventas", "Certificaciones", "Poderes", "Constitución de sociedades", "Testamentos"],
+  },
+  {
+    id: "conciliacion",
+    label: "Conciliaciones y Mediación",
+    topics: ["Conciliación previa", "Mediación", "Justicia de paz"],
+  },
+];
+
+/** Compat: muchos componentes importan SPECIALTIES para listar las ramas. */
+export const SPECIALTIES = LEGAL_AREAS;
 
 export function specialtyLabel(id: string): string {
-  return SPECIALTIES.find((s) => s.id === id)?.label ?? id;
+  const norm = LEGACY_AREA_MAP[id] ?? id;
+  return LEGAL_AREAS.find((s) => s.id === norm)?.label ?? id;
+}
+
+export function areaById(id: string): LegalArea | undefined {
+  return LEGAL_AREAS.find((s) => s.id === id);
+}
+
+/** Temas disponibles para un conjunto de ramas elegidas (para el paso opcional). */
+export function topicsForAreas(areaIds: string[]): { area: string; topics: string[] }[] {
+  return areaIds
+    .map((id) => areaById(id))
+    .filter((a): a is LegalArea => !!a)
+    .map((a) => ({ area: a.label, topics: a.topics }));
+}
+
+// Migración de ids viejos → nuevos (seeds y datos previos a la taxonomía de ramas)
+const LEGACY_AREA_MAP: Record<string, string> = {
+  inmobiliario: "civil",
+  sucesiones: "sucesorio",
+  marcas: "intelectual",
+  contratos: "civil",
+  pymes: "comercial",
+  cripto: "comercial",
+  deportivo: "civil",
+};
+
+export function normalizeAreaId(id: string): string {
+  return LEGACY_AREA_MAP[id] ?? id;
 }
 
 export const CITIES_BY_COUNTRY: Record<"UY" | "AR", readonly string[]> = {

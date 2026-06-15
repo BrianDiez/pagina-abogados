@@ -32,6 +32,8 @@ export interface RegisterLawyerInput {
   /** matrículas por jurisdicción — en AR suele haber varias */
   registrations?: import("@/types").ProfessionalRegistration[];
   specialties: string[];
+  topics?: string[];
+  highlights?: string[];
   bio: string;
   yearsExperience: number;
 }
@@ -141,8 +143,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         city: data.city ?? "",
         languages: ["Español"],
         specialties: data.specialties,
+        topics: data.topics ?? [],
         modalities: ["video"],
-        highlights: [],
+        highlights: data.highlights ?? [],
         plan: "free",
         acceptsNewClients: true,
         cancellationPolicyHours: 24,

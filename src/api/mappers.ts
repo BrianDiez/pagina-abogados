@@ -1,5 +1,6 @@
 // Mapeo de filas snake_case de la API Neon a los tipos camelCase del dominio.
 import type { Lawyer, Review, Service } from "@/types";
+import { normalizeAreaId } from "@/lib/constants";
 import type { LawyerWithPrice } from "./lawyers";
 
 type Row = Record<string, unknown>;
@@ -21,7 +22,8 @@ export function mapLawyer(row: Row): LawyerWithPrice {
     province: (row.province as string) ?? undefined,
     city: String(row.city ?? ""),
     languages: (row.languages as string[]) ?? [],
-    specialties: (row.specialties as string[]) ?? [],
+    specialties: ((row.specialties as string[]) ?? []).map(normalizeAreaId),
+    topics: (row.topics as string[]) ?? [],
     modalities: (row.modalities as Lawyer["modalities"]) ?? [],
     highlights: (row.highlights as string[]) ?? [],
     plan: (row.plan as Lawyer["plan"]) ?? "free",

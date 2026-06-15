@@ -12,6 +12,7 @@ import type {
   TimeBlock,
   WeeklyAvailability,
 } from "@/types";
+import { normalizeAreaId } from "@/lib/constants";
 import { provinceOfCity } from "@/lib/geography";
 import {
   seedAppointments,
@@ -31,6 +32,8 @@ function withProvince(lawyers: Lawyer[]): Lawyer[] {
   return lawyers.map((l) => ({
     ...l,
     province: l.province ?? provinceOfCity(l.country, l.city),
+    // migra ids viejos de ramas (inmobiliario→civil, sucesiones→sucesorio…) y dedupe
+    specialties: [...new Set(l.specialties.map(normalizeAreaId))],
   }));
 }
 
@@ -47,8 +50,8 @@ interface DemoDB {
   firmInquiries: FirmInquiry[];
 }
 
-// v4: departamento/provincia (geografía de dos niveles)
-const KEY = "legalhub-demo-db-v4";
+// v5: taxonomía ramas→temas (ids de especialidad migrados)
+const KEY = "legalhub-demo-db-v5";
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 function freshDB(): DemoDB {

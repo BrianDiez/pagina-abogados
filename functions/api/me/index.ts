@@ -26,6 +26,8 @@ export const onRequestPost: Handler = async ({ request, env }) => {
       yearsExperience: number;
       bio: string;
       specialties: string[];
+      topics?: string[];
+      highlights?: string[];
     };
   };
   if (!profile?.displayName) return error("Perfil incompleto", 400);
@@ -44,12 +46,13 @@ export const onRequestPost: Handler = async ({ request, env }) => {
   const lawyers = await sql`
     insert into lawyers
       (user_id, slug, display_name, title, professional_type, country, province, city,
-       matricula_number, registrations, years_experience, bio, specialties)
+       matricula_number, registrations, years_experience, bio, specialties, topics, highlights)
     values
       (${session.userId}, ${slug}, ${profile.displayName}, ${profile.title},
        ${profile.professionalType}, ${profile.country}, ${profile.province ?? null}, ${profile.city},
        ${profile.matriculaNumber}, ${JSON.stringify(profile.registrations ?? [])}::jsonb,
-       ${profile.yearsExperience}, ${profile.bio}, ${profile.specialties})
+       ${profile.yearsExperience}, ${profile.bio}, ${profile.specialties},
+       ${profile.topics ?? []}, ${profile.highlights ?? []})
     returning id, slug
   `;
   return json(lawyers[0], 201);

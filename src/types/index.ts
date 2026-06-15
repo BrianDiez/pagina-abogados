@@ -41,9 +41,10 @@ export interface Lawyer {
   province?: string;
   city: string;
   languages: string[];
-  specialties: string[]; // ids de SPECIALTIES
+  specialties: string[]; // ids de ramas (LEGAL_AREAS)
+  topics?: string[]; // temas opcionales dentro de las ramas
   modalities: Modality[];
-  highlights: string[];
+  highlights: string[]; // formación / posgrados / especializaciones
   plan: Plan;
   acceptsNewClients: boolean;
   cancellationPolicyHours: number;

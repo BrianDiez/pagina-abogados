@@ -49,9 +49,10 @@ create table lawyers (
   whatsapp text,
   linkedin_url text,
   languages text[] not null default '{es}',
-  specialties text[] not null default '{}',
+  specialties text[] not null default '{}', -- ramas del derecho (LEGAL_AREAS)
+  topics text[] not null default '{}', -- temas opcionales dentro de las ramas
   modalities text[] not null default '{video}',
-  highlights text[] not null default '{}',
+  highlights text[] not null default '{}', -- formación / posgrados
   plan text not null default 'free'
     check (plan in ('free', 'essential', 'professional', 'studio', 'enterprise')),
   accepts_new_clients boolean not null default true,

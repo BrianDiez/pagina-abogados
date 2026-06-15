@@ -6,7 +6,7 @@ import { z } from "zod";
 import { BadgeCheck, ChevronLeft } from "lucide-react";
 import { useAuth } from "@/api/auth";
 import { BACKEND } from "@/lib/backend";
-import { SPECIALTIES } from "@/lib/constants";
+import { SPECIALTIES, topicsForAreas } from "@/lib/constants";
 import { citiesOf, regionByName, regionLabel, regionsOf } from "@/lib/geography";
 import {
   defaultJurisdiction,
@@ -48,8 +48,10 @@ export function RegisterLawyerPage() {
   const { registerLawyer, user, loading } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(FIRST_STEP);
-  const [specialties, setSpecialties] = useState<string[]>([]);
+  const [specialties, setSpecialties] = useState<string[]>([]); // ramas
   const [specialtiesError, setSpecialtiesError] = useState<string | null>(null);
+  const [topics, setTopics] = useState<string[]>([]); // temas opcionales
+  const [education, setEducation] = useState<string[]>([]); // posgrados/especializaciones
   // Matrículas por jurisdicción (en AR lo normal es tener más de una)
   const [registrations, setRegistrations] = useState<ProfessionalRegistration[]>([
     { jurisdictionId: defaultJurisdiction("UY"), number: "" },
@@ -94,9 +96,23 @@ export function RegisterLawyerPage() {
 
   function toggleSpecialty(id: string) {
     setSpecialtiesError(null);
-    setSpecialties((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : prev.length < 5 ? [...prev, id] : prev,
-    );
+    setSpecialties((prev) => {
+      const next = prev.includes(id)
+        ? prev.filter((s) => s !== id)
+        : prev.length < 6
+          ? [...prev, id]
+          : prev;
+      // si se quita una rama, descartar sus temas seleccionados
+      if (prev.includes(id)) {
+        const validTopics = new Set(topicsForAreas(next).flatMap((g) => g.topics));
+        setTopics((t) => t.filter((tp) => validTopics.has(tp)));
+      }
+      return next;
+    });
+  }
+
+  function toggleTopic(topic: string) {
+    setTopics((prev) => (prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]));
   }
 
   const country = form.watch("country");
@@ -167,6 +183,8 @@ export function RegisterLawyerPage() {
       matriculaNumber: registrationsDisplay(regs),
       registrations: regs,
       specialties,
+      topics,
+      highlights: education.map((e) => e.trim()).filter(Boolean),
     });
     navigate("/dashboard");
   }
@@ -369,9 +387,10 @@ export function RegisterLawyerPage() {
                   <Input type="number" min={0} max={70} {...form.register("yearsExperience")} />
                 </FieldLabel>
                 <FieldLabel
-                  label="Especialidades (hasta 5)"
+                  label="Áreas / ramas del derecho (hasta 6)"
                   required
                   error={specialtiesError ?? undefined}
+                  hint="Elegí las ramas en las que ejercés. Después podés afinar con temas."
                 >
                   <div className="flex flex-wrap gap-2 pt-1">
                     {SPECIALTIES.map((s) => (
@@ -391,6 +410,39 @@ export function RegisterLawyerPage() {
                     ))}
                   </div>
                 </FieldLabel>
+
+                {/* Temas opcionales dentro de las ramas elegidas */}
+                {specialties.length > 0 && (
+                  <FieldLabel
+                    label="Temas que trabajás (opcional)"
+                    hint="Afiná tu perfil: ayuda a que te encuentren por el problema puntual del cliente."
+                  >
+                    <div className="space-y-3 pt-1">
+                      {topicsForAreas(specialties).map((group) => (
+                        <div key={group.area}>
+                          <p className="mb-1.5 text-xs font-semibold text-navy-500">{group.area}</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {group.topics.map((topic) => (
+                              <button
+                                key={topic}
+                                type="button"
+                                onClick={() => toggleTopic(topic)}
+                                className={cn(
+                                  "rounded-full border px-2.5 py-1 text-xs transition-colors cursor-pointer",
+                                  topics.includes(topic)
+                                    ? "border-gold-500 bg-gold-100 text-gold-700 font-medium"
+                                    : "border-navy-200 bg-white text-navy-500 hover:border-navy-400",
+                                )}
+                              >
+                                {topic}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </FieldLabel>
+                )}
               </>
             )}
 
@@ -428,6 +480,44 @@ export function RegisterLawyerPage() {
                     Tip: contá a quién ayudás y con qué — evitá el juridiqués. Reemplazá los [corchetes].
                   </p>
                 </div>
+
+                {/* Especializaciones / posgrados (opcional) */}
+                <FieldLabel
+                  label="Especializaciones y posgrados (opcional)"
+                  hint="Maestrías, posgrados, diplomaturas o cursos relevantes. Aparecen en tu perfil."
+                >
+                  <div className="space-y-2 pt-1">
+                    {education.map((item, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Input
+                          value={item}
+                          onChange={(e) =>
+                            setEducation((prev) => prev.map((v, i) => (i === index ? e.target.value : v)))
+                          }
+                          placeholder="Ej.: Posgrado en Derecho de Familia — Universidad de Montevideo"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setEducation((prev) => prev.filter((_, i) => i !== index))}
+                          className="text-navy-300 hover:text-danger cursor-pointer"
+                          aria-label="Quitar"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    {education.length < 5 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEducation((prev) => [...prev, ""])}
+                      >
+                        + Agregar formación
+                      </Button>
+                    )}
+                  </div>
+                </FieldLabel>
+
                 <div className="rounded-xl border border-gold-200 bg-gold-50 p-4 text-sm text-navy-600">
                   <p className="flex items-center gap-1.5 font-semibold text-gold-700">
                     <BadgeCheck className="size-4" />
