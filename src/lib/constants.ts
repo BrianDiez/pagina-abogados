@@ -11,6 +11,10 @@ export interface LegalArea {
   topics: string[];
 }
 
+// Taxonomía completa validada con investigación (UY/AR), ordenada por frecuencia
+// de uso. Cada rama trae sus temas. "Inmobiliario" es tema de Civil (no rama);
+// "Divorcio", tema de Familia; "Previsional/Seguridad Social" se separa de
+// Laboral porque en AR es una especialidad propia; etc.
 export const LEGAL_AREAS: LegalArea[] = [
   {
     id: "civil",
@@ -18,11 +22,13 @@ export const LEGAL_AREAS: LegalArea[] = [
     topics: [
       "Contratos y obligaciones",
       "Daños y perjuicios / Responsabilidad civil",
+      "Accidentes de tránsito",
       "Arrendamientos / Alquileres",
       "Propiedad y derechos reales",
       "Compraventa de inmuebles",
+      "Propiedad horizontal",
       "Desalojos",
-      "Cobro de pesos",
+      "Cobro de pesos / ejecuciones",
       "Prescripción adquisitiva (usucapión)",
     ],
   },
@@ -39,12 +45,19 @@ export const LEGAL_AREAS: LegalArea[] = [
       "Violencia doméstica",
       "Unión concubinaria",
       "Curatela e interdicción",
+      "Capitulaciones / régimen de bienes",
     ],
   },
   {
     id: "sucesorio",
     label: "Derecho Sucesorio",
-    topics: ["Sucesiones y herencias", "Testamentos", "Partición de bienes", "Declaratoria de herederos"],
+    topics: [
+      "Sucesiones y herencias",
+      "Testamentos",
+      "Partición de bienes",
+      "Declaratoria de herederos",
+      "Cesión de derechos hereditarios",
+    ],
   },
   {
     id: "penal",
@@ -53,7 +66,9 @@ export const LEGAL_AREAS: LegalArea[] = [
       "Defensa penal",
       "Querellas",
       "Excarcelaciones y libertades",
-      "Delitos económicos",
+      "Penal económico",
+      "Lavado de activos",
+      "Delitos contra la administración pública",
       "Estupefacientes",
       "Violencia y lesiones",
       "Penal juvenil (adolescentes)",
@@ -65,11 +80,24 @@ export const LEGAL_AREAS: LegalArea[] = [
     label: "Derecho Laboral",
     topics: [
       "Despidos",
-      "Accidentes de trabajo",
-      "Acoso laboral",
+      "Accidentes y enfermedades de trabajo",
+      "Acoso laboral / mobbing",
       "Reclamos salariales",
       "Trabajo no registrado",
-      "Seguridad social y jubilaciones",
+      "Negociación colectiva y sindicatos",
+      "Personal de servicio doméstico",
+    ],
+  },
+  {
+    id: "previsional",
+    label: "Seguridad Social y Previsional",
+    topics: [
+      "Jubilaciones",
+      "Pensiones",
+      "Reajustes jubilatorios",
+      "Incapacidad / invalidez",
+      "Trámites ante BPS / ANSES",
+      "Moratoria previsional",
     ],
   },
   {
@@ -78,51 +106,231 @@ export const LEGAL_AREAS: LegalArea[] = [
     topics: [
       "Constitución de sociedades",
       "Contratos comerciales",
-      "Concursos y quiebras",
+      "Fusiones y adquisiciones (M&A)",
+      "Fideicomisos",
+      "Franquicias",
+      "Compliance corporativo",
       "Asesoría de empresas y pymes",
       "Startups y tecnología",
       "Criptomonedas y activos digitales",
     ],
   },
   {
-    id: "administrativo",
-    label: "Contencioso Administrativo",
-    topics: ["Recursos contra el Estado", "Empleo público", "Expropiaciones", "Responsabilidad del Estado"],
+    id: "concursal",
+    label: "Concursos y Quiebras",
+    topics: [
+      "Concurso de acreedores",
+      "Quiebra",
+      "Reestructuración de deudas",
+      "Verificación de créditos",
+      "Salvataje de empresas (cramdown)",
+    ],
   },
   {
     id: "tributario",
     label: "Derecho Tributario",
-    topics: ["Impuestos (DGI / AFIP)", "Defensa ante el fisco", "Planificación fiscal"],
+    topics: [
+      "Impuestos (DGI / AFIP)",
+      "Defensa ante el fisco",
+      "Planificación fiscal",
+      "Tributación internacional",
+      "Moratorias y planes de pago",
+    ],
+  },
+  {
+    id: "administrativo",
+    label: "Administrativo y Contencioso Administrativo",
+    topics: [
+      "Recursos contra el Estado",
+      "Empleo / función pública",
+      "Contrataciones y licitaciones",
+      "Expropiaciones",
+      "Responsabilidad del Estado",
+      "Regulación de servicios públicos",
+    ],
+  },
+  {
+    id: "constitucional",
+    label: "Derecho Constitucional y Amparo",
+    topics: [
+      "Acción de amparo",
+      "Inconstitucionalidad",
+      "Habeas corpus",
+      "Habeas data",
+      "Derechos fundamentales",
+    ],
   },
   {
     id: "consumidor",
     label: "Derecho del Consumidor",
-    topics: ["Reclamos de consumo", "Defensa del consumidor", "Sobreendeudamiento"],
-  },
-  {
-    id: "migratorio",
-    label: "Derecho Migratorio",
-    topics: ["Residencias y radicaciones", "Ciudadanía", "Visados de trabajo e inversión"],
-  },
-  {
-    id: "internacional",
-    label: "Derecho Internacional",
-    topics: ["Internacional privado", "Contratos internacionales", "Restitución internacional de menores"],
+    topics: ["Reclamos de consumo", "Defensa del consumidor", "Sobreendeudamiento", "Cláusulas abusivas"],
   },
   {
     id: "intelectual",
     label: "Propiedad Intelectual",
-    topics: ["Marcas", "Patentes", "Derechos de autor", "Nombres de dominio"],
+    topics: [
+      "Marcas",
+      "Patentes",
+      "Derechos de autor",
+      "Nombres de dominio",
+      "Combate a la falsificación",
+    ],
+  },
+  {
+    id: "informatico",
+    label: "Derecho Informático y Protección de Datos",
+    topics: [
+      "Protección de datos personales",
+      "Ciberdelitos",
+      "Contratos tecnológicos / SaaS",
+      "Comercio electrónico",
+      "Inteligencia artificial",
+    ],
+  },
+  {
+    id: "bancario",
+    label: "Derecho Bancario y Financiero",
+    topics: [
+      "Contratos bancarios",
+      "Mercado de capitales",
+      "Fideicomisos financieros",
+      "Financiamiento",
+      "Defensa del deudor",
+      "Fintech",
+    ],
+  },
+  {
+    id: "seguros",
+    label: "Derecho de Seguros",
+    topics: [
+      "Reclamos a aseguradoras",
+      "Accidentes de tránsito",
+      "Seguros de vida",
+      "Responsabilidad civil",
+      "Reaseguros",
+    ],
+  },
+  {
+    id: "salud",
+    label: "Derecho de la Salud y Mala Praxis",
+    topics: [
+      "Mala praxis médica",
+      "Responsabilidad médica",
+      "Cobertura de medicamentos y prestaciones",
+      "Derecho a la salud",
+      "Discapacidad",
+    ],
+  },
+  {
+    id: "migratorio",
+    label: "Derecho Migratorio",
+    topics: ["Residencias y radicaciones", "Ciudadanía", "Visados de trabajo e inversión", "Expulsiones"],
+  },
+  {
+    id: "internacional",
+    label: "Derecho Internacional",
+    topics: [
+      "Internacional privado",
+      "Internacional público",
+      "Contratos internacionales",
+      "Arbitraje internacional",
+      "Restitución internacional de menores",
+      "Cooperación y exhortos",
+    ],
+  },
+  {
+    id: "ambiental",
+    label: "Derecho Ambiental",
+    topics: [
+      "Daño ambiental",
+      "Evaluación de impacto ambiental",
+      "Conflictos por agua y suelo",
+      "Gestión de residuos",
+      "Cambio climático",
+    ],
+  },
+  {
+    id: "aduanero",
+    label: "Derecho Aduanero y Comercio Exterior",
+    topics: [
+      "Infracciones aduaneras",
+      "Clasificación arancelaria",
+      "Importación y exportación",
+      "Zonas francas",
+      "Comercio internacional",
+    ],
+  },
+  {
+    id: "agrario",
+    label: "Derecho Agrario y Rural",
+    topics: [
+      "Arrendamientos rurales",
+      "Compraventa de campos",
+      "Aguas y riego",
+      "Sanidad animal y vegetal",
+      "Cooperativas agrarias",
+    ],
+  },
+  {
+    id: "energia",
+    label: "Derecho de Minería y Energía",
+    topics: [
+      "Energías renovables",
+      "Concesiones mineras",
+      "Hidrocarburos",
+      "Regulación energética",
+      "Recursos naturales",
+    ],
+  },
+  {
+    id: "transporte",
+    label: "Derecho Marítimo, Aeronáutico y del Transporte",
+    topics: [
+      "Derecho marítimo",
+      "Derecho aeronáutico",
+      "Transporte de cargas",
+      "Pesca",
+      "Accidentes de transporte",
+    ],
+  },
+  {
+    id: "ddhh",
+    label: "Derechos Humanos",
+    topics: [
+      "Discriminación",
+      "Violencia institucional",
+      "Derechos de género",
+      "Libertad de expresión",
+      "Litigio de interés público",
+    ],
+  },
+  {
+    id: "deportivo",
+    label: "Derecho Deportivo",
+    topics: [
+      "Contratos deportivos",
+      "Transferencias de jugadores",
+      "Disciplina deportiva",
+      "Derechos de imagen",
+      "Dopaje",
+    ],
   },
   {
     id: "notarial",
     label: "Escribanía / Notariado",
-    topics: ["Compraventas", "Certificaciones", "Poderes", "Constitución de sociedades", "Testamentos"],
+    topics: [
+      "Compraventas",
+      "Certificaciones",
+      "Poderes",
+      "Constitución de sociedades",
+      "Testamentos",
+      "Estudio de títulos",
+    ],
   },
   {
     id: "conciliacion",
-    label: "Conciliaciones y Mediación",
-    topics: ["Conciliación previa", "Mediación", "Justicia de paz"],
+    label: "Conciliaciones, Mediación y Arbitraje",
+    topics: ["Conciliación previa", "Mediación", "Arbitraje", "Justicia de paz"],
   },
 ];
 
@@ -154,7 +362,6 @@ const LEGACY_AREA_MAP: Record<string, string> = {
   contratos: "civil",
   pymes: "comercial",
   cripto: "comercial",
-  deportivo: "civil",
 };
 
 export function normalizeAreaId(id: string): string {
