@@ -48,7 +48,8 @@ export function RegisterLawyerPage() {
   const { registerLawyer, user, loading } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(FIRST_STEP);
-  const [specialties, setSpecialties] = useState<string[]>([]); // ramas
+  // Ramas como filas de dropdown (mismo patrón que las matrículas). "" = sin elegir.
+  const [areaRows, setAreaRows] = useState<string[]>([""]);
   const [specialtiesError, setSpecialtiesError] = useState<string | null>(null);
   const [topics, setTopics] = useState<string[]>([]); // temas opcionales
   const [education, setEducation] = useState<string[]>([]); // posgrados/especializaciones
@@ -94,20 +95,35 @@ export function RegisterLawyerPage() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  function toggleSpecialty(id: string) {
+  // Ramas efectivamente elegidas (filas no vacías, sin duplicados)
+  const selectedAreas = [...new Set(areaRows.filter(Boolean))];
+
+  function setAreaRow(index: number, id: string) {
     setSpecialtiesError(null);
-    setSpecialties((prev) => {
-      const next = prev.includes(id)
-        ? prev.filter((s) => s !== id)
-        : prev.length < 6
-          ? [...prev, id]
-          : prev;
-      // si se quita una rama, descartar sus temas seleccionados
-      if (prev.includes(id)) {
-        const validTopics = new Set(topicsForAreas(next).flatMap((g) => g.topics));
-        setTopics((t) => t.filter((tp) => validTopics.has(tp)));
-      }
+    setAreaRows((prev) => {
+      const next = prev.map((v, i) => (i === index ? id : v));
+      // al cambiar una rama, descartar temas que ya no pertenezcan a ninguna elegida
+      const validTopics = new Set(
+        topicsForAreas([...new Set(next.filter(Boolean))]).flatMap((g) => g.topics),
+      );
+      setTopics((t) => t.filter((tp) => validTopics.has(tp)));
       return next;
+    });
+  }
+
+  function addAreaRow() {
+    setAreaRows((prev) => (prev.some((v) => !v) || prev.length >= 6 ? prev : [...prev, ""]));
+  }
+
+  function removeAreaRow(index: number) {
+    setAreaRows((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      const rows = next.length > 0 ? next : [""];
+      const validTopics = new Set(
+        topicsForAreas([...new Set(rows.filter(Boolean))]).flatMap((g) => g.topics),
+      );
+      setTopics((t) => t.filter((tp) => validTopics.has(tp)));
+      return rows;
     });
   }
 
@@ -166,8 +182,8 @@ export function RegisterLawyerPage() {
   }
 
   async function submit(data: Form) {
-    if (specialties.length === 0) {
-      setSpecialtiesError("Elegí al menos una especialidad");
+    if (selectedAreas.length === 0) {
+      setSpecialtiesError("Elegí al menos una rama del derecho");
       setStep(1);
       return;
     }
@@ -182,7 +198,7 @@ export function RegisterLawyerPage() {
       email: data.email ?? user?.email ?? "",
       matriculaNumber: registrationsDisplay(regs),
       registrations: regs,
-      specialties,
+      specialties: selectedAreas,
       topics,
       highlights: education.map((e) => e.trim()).filter(Boolean),
     });
@@ -201,8 +217,8 @@ export function RegisterLawyerPage() {
         setRegistrationsError("Cargá al menos una matrícula (la verificamos en 48 h)");
         return;
       }
-      if (specialties.length === 0) {
-        setSpecialtiesError("Elegí al menos una especialidad");
+      if (selectedAreas.length === 0) {
+        setSpecialtiesError("Elegí al menos una rama del derecho");
         return;
       }
     }
@@ -386,39 +402,58 @@ export function RegisterLawyerPage() {
                 <FieldLabel label="Años de experiencia" required>
                   <Input type="number" min={0} max={70} {...form.register("yearsExperience")} />
                 </FieldLabel>
+                {/* Ramas como filas de dropdown (mismo patrón que las matrículas) */}
                 <FieldLabel
-                  label="Áreas / ramas del derecho (hasta 6)"
+                  label="Ramas del derecho (hasta 6)"
                   required
                   error={specialtiesError ?? undefined}
                   hint="Elegí las ramas en las que ejercés. Después podés afinar con temas."
                 >
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {SPECIALTIES.map((s) => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => toggleSpecialty(s.id)}
-                        className={cn(
-                          "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer",
-                          specialties.includes(s.id)
-                            ? "border-navy-700 bg-navy-700 text-white"
-                            : "border-navy-200 bg-white text-navy-600 hover:border-navy-400",
+                  <div className="space-y-2 pt-1">
+                    {areaRows.map((areaId, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Select
+                          value={areaId}
+                          onChange={(e) => setAreaRow(index, e.target.value)}
+                          className="flex-1"
+                        >
+                          <option value="">Elegir rama…</option>
+                          {SPECIALTIES.filter(
+                            (a) => a.id === areaId || !selectedAreas.includes(a.id),
+                          ).map((a) => (
+                            <option key={a.id} value={a.id}>
+                              {a.label}
+                            </option>
+                          ))}
+                        </Select>
+                        {areaRows.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeAreaRow(index)}
+                            className="text-navy-300 hover:text-danger cursor-pointer"
+                            aria-label="Quitar rama"
+                          >
+                            ✕
+                          </button>
                         )}
-                      >
-                        {s.label}
-                      </button>
+                      </div>
                     ))}
+                    {selectedAreas.length < 6 && (
+                      <Button variant="ghost" size="sm" onClick={addAreaRow}>
+                        + Agregar rama
+                      </Button>
+                    )}
                   </div>
                 </FieldLabel>
 
                 {/* Temas opcionales dentro de las ramas elegidas */}
-                {specialties.length > 0 && (
+                {selectedAreas.length > 0 && (
                   <FieldLabel
                     label="Temas que trabajás (opcional)"
                     hint="Afiná tu perfil: ayuda a que te encuentren por el problema puntual del cliente."
                   >
                     <div className="space-y-3 pt-1">
-                      {topicsForAreas(specialties).map((group) => (
+                      {topicsForAreas(selectedAreas).map((group) => (
                         <div key={group.area}>
                           <p className="mb-1.5 text-xs font-semibold text-navy-500">{group.area}</p>
                           <div className="flex flex-wrap gap-1.5">
