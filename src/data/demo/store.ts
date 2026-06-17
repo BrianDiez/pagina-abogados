@@ -50,8 +50,8 @@ interface DemoDB {
   firmInquiries: FirmInquiry[];
 }
 
-// v5: taxonomía ramas→temas (ids de especialidad migrados)
-const KEY = "legalhub-demo-db-v5";
+// v6: videollamadas reales (Jitsi) en lugar de placeholders muertos
+const KEY = "legalhub-demo-db-v6";
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 function freshDB(): DemoDB {

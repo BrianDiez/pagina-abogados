@@ -85,9 +85,16 @@ export function ReservaConfirmacionPage() {
                 )}
               </div>
               {appt?.videoRoomUrl && (
-                <p className="mt-4 rounded-xl bg-gold-50 p-4 text-sm text-navy-600">
-                  <Video className="mr-1 inline size-4 text-gold-600" />
-                  La videollamada se abre desde el link del email, 5 minutos antes del turno.
+                <a href={appt.videoRoomUrl} target="_blank" rel="noreferrer" className="mt-4 block">
+                  <Button variant="gold" size="lg" className="w-full">
+                    <Video className="size-4" />
+                    Entrar a la videollamada
+                  </Button>
+                </a>
+              )}
+              {appt?.videoRoomUrl && (
+                <p className="mt-2 text-xs text-navy-400">
+                  También recibís el link por email. La sala se abre 5 minutos antes del turno.
                 </p>
               )}
               <ButtonLink to={appt?.lawyerSlug ? `/p/${appt.lawyerSlug}` : "/"} variant="outline" className="mt-6">

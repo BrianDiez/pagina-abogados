@@ -14,6 +14,8 @@ export interface Env {
   MP_CLIENT_ID?: string;
   MP_CLIENT_SECRET?: string;
   APP_URL?: string; // p. ej. https://localhub-5am.pages.dev
+  // Video: si hay DAILY_API_KEY se crean salas privadas Daily.co; si no, Jitsi
+  DAILY_API_KEY?: string;
 }
 
 /** ¿Está configurada la integración de MercadoPago a nivel plataforma? */

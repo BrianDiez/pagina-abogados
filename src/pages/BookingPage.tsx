@@ -208,11 +208,17 @@ export function BookingPage() {
               </p>
             </div>
             {isVideo && confirmed.videoRoomUrl && (
-              <p className="mt-4 rounded-xl bg-gold-50 p-4 text-sm text-navy-600">
-                <Video className="mr-1 inline size-4 text-gold-600" />
-                La videollamada se abre desde el link del email, disponible 5 minutos antes del
-                turno.
-              </p>
+              <div className="mt-4">
+                <a href={confirmed.videoRoomUrl} target="_blank" rel="noreferrer" className="block">
+                  <Button variant="gold" size="lg" className="w-full">
+                    <Video className="size-4" />
+                    Entrar a la videollamada
+                  </Button>
+                </a>
+                <p className="mt-2 text-xs text-navy-400">
+                  También te llega el link por email. La sala se abre 5 minutos antes del turno.
+                </p>
+              </div>
             )}
             <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
               <ButtonLink to={`/p/${lawyer.slug}`} variant="outline">

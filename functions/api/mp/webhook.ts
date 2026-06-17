@@ -2,6 +2,7 @@
 // Idempotente: payments.gateway_payment_id es UNIQUE. Confirma el turno cuando
 // el pago queda aprobado. El ?lawyer= (preservado por MP) dice qué token usar.
 import { getSql, json, type Handler, type Env } from "../../../server/db";
+import { videoRoomUrl } from "../../../server/video";
 
 async function process(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
@@ -58,10 +59,20 @@ async function process(request: Request, env: Env): Promise<Response> {
   `;
 
   if (status === "completed") {
-    await sql`
+    const updated = await sql`
       update appointments set status = 'confirmed', payment_status = 'paid'
       where id = ${appointmentId} and status = 'pending_payment'
+      returning id, modality, starts_at, ends_at, video_room_url
     `;
+    // Asignar sala de video a la consulta confirmada (modalidad video)
+    if (updated[0]?.modality === "video" && !updated[0].video_room_url) {
+      const url = await videoRoomUrl(env, {
+        id: String(updated[0].id),
+        starts_at: String(updated[0].starts_at),
+        ends_at: String(updated[0].ends_at),
+      });
+      await sql`update appointments set video_room_url = ${url} where id = ${appointmentId}`;
+    }
     // TODO: email de confirmación via Resend
   }
 

@@ -1,7 +1,23 @@
 // GET   /api/bookings?id= — estado público de un turno (pantalla post-pago)
 // POST  /api/bookings — crea la reserva (público; gratis confirma directo)
 // PATCH /api/bookings?id=&action=demo-pay — gateway demo hasta MercadoPago
-import { getSql, json, error, type Handler } from "../../server/db";
+import { getSql, json, error, type Handler, type Env } from "../../server/db";
+import { videoRoomUrl } from "../../server/video";
+
+// Asigna sala de video a un turno confirmado de modalidad video (idempotente).
+async function ensureVideoRoom(env: Env, appt: Record<string, unknown>): Promise<string | null> {
+  if (appt.modality !== "video" || appt.video_room_url) {
+    return (appt.video_room_url as string) ?? null;
+  }
+  const sql = getSql(env);
+  const url = await videoRoomUrl(env, {
+    id: String(appt.id),
+    starts_at: String(appt.starts_at),
+    ends_at: String(appt.ends_at),
+  });
+  await sql`update appointments set video_room_url = ${url} where id = ${appt.id}`;
+  return url;
+}
 
 interface BookingBody {
   lawyerId: string;
@@ -65,7 +81,12 @@ export const onRequestPost: Handler = async ({ request, env }) => {
          ${Number(service.price) === 0 ? "confirmed" : "pending_payment"})
       returning *
     `;
-    return json(appointments[0], 201);
+    const appt = appointments[0]!;
+    // Consulta gratuita: ya queda confirmada → asignar sala de video
+    if (appt.status === "confirmed") {
+      appt.video_room_url = await ensureVideoRoom(env, appt);
+    }
+    return json(appt, 201);
   } catch (e) {
     if (String(e).includes("no_overlapping_appointments")) {
       return error("Ese horario acaba de ser reservado. Elegí otro, por favor.", 409);
@@ -93,6 +114,7 @@ export const onRequestPatch: Handler = async ({ request, env }) => {
     insert into payments (appointment_id, lawyer_id, amount, currency, gateway, status)
     values (${id}, ${rows[0]!.lawyer_id}, ${rows[0]!.price}, ${rows[0]!.currency}, 'demo', 'completed')
   `;
+  rows[0]!.video_room_url = await ensureVideoRoom(env, rows[0]!);
   return json(rows[0]);
 };
 

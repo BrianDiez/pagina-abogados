@@ -464,13 +464,13 @@ export const seedAppointments: Appointment[] = [
   appt("ap2", "c2", "s1-1", past(14, 9), 45, "completed", { clientNotes: "Sucesión de mi padre, somos 3 hermanos." }),
   appt("ap3", "c3", "s1-3", past(8, 15), 60, "completed"),
   appt("ap4", "c4", "s1-2", past(3, 11), 30, "completed", { lawyerNotes: "Pendiente: enviar borrador de convenio al cliente." }),
-  appt("ap5", "c1", "s1-2", at(1, 9, 0), 30, "confirmed", { clientNotes: "Seguimiento del convenio.", videoRoomUrl: "https://legalhub.daily.co/demo-ap5" }),
+  appt("ap5", "c1", "s1-2", at(1, 9, 0), 30, "confirmed", { clientNotes: "Seguimiento del convenio.", videoRoomUrl: "https://meet.jit.si/legalhub-demo-ap5" }),
   appt("ap6", "c5", "s1-1", at(1, 10, 0), 45, "confirmed", { clientNotes: "Consulta por tenencia compartida." }),
   appt("ap7", "c3", "s1-1", at(2, 14, 0), 45, "pending_payment"),
   appt("ap8", "c2", "s1-2", at(4, 9, 30), 30, "confirmed"),
   // Historial del cliente demo (c6) con distintos profesionales
   appt("ap9", "c6", "s2-1", past(10, 10), 45, "completed"),
-  appt("ap10", "c6", "s1-1", at(3, 9, 0), 45, "confirmed", { videoRoomUrl: "https://legalhub.daily.co/demo-ap10" }),
+  appt("ap10", "c6", "s1-1", at(3, 9, 0), 45, "confirmed", { videoRoomUrl: "https://meet.jit.si/legalhub-demo-ap10" }),
 ];
 
 export const seedTimeBlocks: TimeBlock[] = [

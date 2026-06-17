@@ -139,7 +139,8 @@ export async function payAppointment(id: string): Promise<Appointment> {
   appointment.status = "confirmed";
   appointment.paymentStatus = appointment.price === 0 ? "waived" : "paid";
   if (appointment.modality === "video") {
-    appointment.videoRoomUrl = `https://legalhub.daily.co/demo-${appointment.id}`;
+    // Jitsi: sala real, gratis, sin cuenta (el id la hace inadivinable)
+    appointment.videoRoomUrl = `https://meet.jit.si/legalhub-${appointment.id}`;
   }
   persist();
   return delay({ ...appointment }, 900);
