@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BadgeCheck, CreditCard, Link2, QrCode, Save, ShieldAlert } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
+import { BadgeCheck, CheckCircle2, CreditCard, Link2, QrCode, Save, ShieldAlert } from "lucide-react";
 import { useLawyer } from "./useLawyer";
 import { updateLawyerProfile } from "@/api/lawyers";
+import { connectMercadoPago, disconnectMercadoPago, getMpStatus } from "@/api/payments";
 import { PLAN_NAMES } from "@/lib/constants";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -12,9 +14,17 @@ import { FieldLabel, Input, Textarea } from "@/components/ui/Field";
 export function SettingsPage() {
   const { data: lawyer } = useLawyer();
   const queryClient = useQueryClient();
+  const [params] = useSearchParams();
   const [bio, setBio] = useState<string | null>(null);
   const [phone, setPhone] = useState<string | null>(null);
   const [accepts, setAccepts] = useState<boolean | null>(null);
+
+  const { data: mp } = useQuery({ queryKey: ["mp-status"], queryFn: getMpStatus });
+  const disconnectMutation = useMutation({
+    mutationFn: disconnectMercadoPago,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["mp-status"] }),
+  });
+  const justConnected = params.get("mp") === "conectado";
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -100,12 +110,51 @@ export function SettingsPage() {
             <>. En tu plan la comisión de LegalHub es 0% — solo pagás la tarifa de MercadoPago.</>
           )}
         </p>
+        {(justConnected || mp?.connected) && (
+          <div className="flex items-center gap-2 rounded-lg bg-success-light p-3 text-sm text-success">
+            <CheckCircle2 className="size-4 shrink-0" />
+            Tu cuenta de MercadoPago está conectada. Los pagos llegan directo a tu cuenta.
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" disabled title="Disponible al conectar el backend (Fase 2)">
-            Conectar MercadoPago
-          </Button>
-          <Badge tone="warn">No conectado</Badge>
+          {mp?.connected ? (
+            <>
+              <Badge tone="green">
+                <CheckCircle2 className="size-3.5" />
+                Conectado
+              </Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-danger hover:bg-danger-light"
+                onClick={() => disconnectMutation.mutate()}
+                disabled={disconnectMutation.isPending}
+              >
+                Desconectar
+              </Button>
+            </>
+          ) : mp?.configured ? (
+            <>
+              <Button variant="gold" onClick={() => connectMercadoPago()}>
+                Conectar MercadoPago
+              </Button>
+              <Badge tone="warn">No conectado</Badge>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" disabled title="MercadoPago aún no habilitado en la plataforma">
+                Conectar MercadoPago
+              </Button>
+              <Badge tone="neutral">Próximamente</Badge>
+            </>
+          )}
         </div>
+        {mp?.connected && (
+          <p className="text-xs text-navy-400">
+            Mientras no conectes, las reservas pagas se confirman igual (modo demostración) sin
+            cargo real.
+          </p>
+        )}
       </Card>
 
       {/* Compartir */}

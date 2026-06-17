@@ -16,6 +16,7 @@ import { ProfilePage } from "@/pages/ProfilePage";
 import { FirmProfilePage } from "@/pages/FirmProfilePage";
 import { FirmsDirectoryPage } from "@/pages/FirmsDirectoryPage";
 import { BookingPage } from "@/pages/BookingPage";
+import { ReservaConfirmacionPage } from "@/pages/ReservaConfirmacionPage";
 import { PricingPage } from "@/pages/PricingPage";
 import { LegalValuesPage } from "@/pages/LegalValuesPage";
 import { LoginPage } from "@/pages/auth/LoginPage";
@@ -60,6 +61,7 @@ export default function App() {
             <Route path="/e/:slug" element={<FirmProfilePage />} />
             <Route path="/p/:slug" element={<ProfilePage />} />
             <Route path="/p/:slug/agendar" element={<BookingPage />} />
+            <Route path="/reserva/:id" element={<ReservaConfirmacionPage />} />
             <Route path="/precios" element={<PricingPage />} />
             <Route path="/valores" element={<LegalValuesPage />} />
             <Route path="/login" element={<LoginPage />} />

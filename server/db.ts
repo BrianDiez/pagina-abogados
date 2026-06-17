@@ -10,6 +10,15 @@ export interface Env {
   R2_SECRET_ACCESS_KEY: string;
   R2_BUCKET: string;
   R2_PUBLIC_URL: string;
+  // MercadoPago (opcionales: si faltan, el checkout cae a gateway 'demo')
+  MP_CLIENT_ID?: string;
+  MP_CLIENT_SECRET?: string;
+  APP_URL?: string; // p. ej. https://localhub-5am.pages.dev
+}
+
+/** ¿Está configurada la integración de MercadoPago a nivel plataforma? */
+export function mpConfigured(env: Env): boolean {
+  return !!(env.MP_CLIENT_ID && env.MP_CLIENT_SECRET && env.APP_URL);
 }
 
 /** Contexto de una Pages Function (tipado mínimo, sin dependencia extra). */

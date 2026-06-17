@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { getLawyerBySlug, getServices } from "@/api/lawyers";
 import { createBooking, payAppointment } from "@/api/appointments";
+import { createPaymentPreference } from "@/api/payments";
+import { DEMO_MODE } from "@/lib/backend";
 import { usePageMeta } from "@/lib/seo";
 import { MODALITY_LABELS } from "@/lib/constants";
 import { cn, formatDateLong, formatMoney, formatTime } from "@/lib/utils";
@@ -125,9 +127,26 @@ export function BookingPage() {
         },
         notes: clientData.notes,
       });
+
+      // Servicio pago: intentar cobro real con MercadoPago (split). Si el
+      // profesional conectó su cuenta → redirige al checkout de MP. Si no
+      // (o es gratis), cae al gateway demo y confirma en el acto.
+      if (!DEMO_MODE && appointment.price > 0) {
+        try {
+          const pref = await createPaymentPreference(appointment.id);
+          if (pref.initPoint) {
+            window.location.href = pref.initPoint; // ida a MercadoPago
+            return null; // la confirmación llega al volver (/reserva/:id)
+          }
+        } catch {
+          /* si MP falla, cae a demo abajo */
+        }
+      }
       return payAppointment(appointment.id);
     },
-    onSuccess: (appointment) => setConfirmed(appointment),
+    onSuccess: (appointment) => {
+      if (appointment) setConfirmed(appointment);
+    },
   });
 
   if (!lawyer) {

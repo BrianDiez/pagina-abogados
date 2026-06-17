@@ -1,3 +1,4 @@
+// GET   /api/bookings?id= — estado público de un turno (pantalla post-pago)
 // POST  /api/bookings — crea la reserva (público; gratis confirma directo)
 // PATCH /api/bookings?id=&action=demo-pay — gateway demo hasta MercadoPago
 import { getSql, json, error, type Handler } from "../../server/db";
@@ -9,6 +10,23 @@ interface BookingBody {
   client: { name: string; email: string; phone: string; country: string };
   notes?: string;
 }
+
+export const onRequestGet: Handler = async ({ request, env }) => {
+  const id = new URL(request.url).searchParams.get("id");
+  if (!id) return error("id requerido", 400);
+  const sql = getSql(env);
+  // campos públicos mínimos para la confirmación (nunca lawyer_notes)
+  const rows = await sql`
+    select a.id, a.status, a.payment_status, a.starts_at, a.modality, a.price, a.currency,
+           a.video_room_url, s.name as service_name, l.display_name as lawyer_name, l.slug as lawyer_slug
+    from appointments a
+    join services s on s.id = a.service_id
+    join lawyers l on l.id = a.lawyer_id
+    where a.id = ${id}
+  `;
+  if (rows.length === 0) return error("Turno no encontrado", 404);
+  return json(rows[0]);
+};
 
 export const onRequestPost: Handler = async ({ request, env }) => {
   const body = (await request.json()) as BookingBody;
